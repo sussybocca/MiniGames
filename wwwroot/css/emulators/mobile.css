@@ -1,0 +1,59 @@
+.mobile-emulator {
+    background: #111;
+    border-radius: 30px;
+    padding: 15px;
+    display: inline-block;
+    box-shadow: 0 20px 30px rgba(0,0,0,0.6);
+}
+.mobile-screen {
+    width: 360px;
+    height: 640px;
+    background: #000;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+.mobile-game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+.mobile-controls {
+    background: #222;
+    border-radius: 20px;
+    padding: 10px;
+    color: white;
+}
+.status-bar {
+    text-align: center;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+.touch-area {
+    height: 100px;
+    background: #333;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    user-select: none;
+}
+.touch-overlay {
+    color: #888;
+    font-size: 14px;
+}
+.bottom-buttons {
+    display: flex;
+    justify-content: space-around;
+}
+.bottom-buttons button {
+    background: #444;
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 60px;
+    height: 40px;
+    border-radius: 20px;
+    cursor: pointer;
+}

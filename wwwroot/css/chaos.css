@@ -1,0 +1,36 @@
+.chaos-glitch {
+    animation: glitch 0.3s infinite;
+}
+@keyframes glitch {
+    0% { transform: translate(0); filter: hue-rotate(0deg); }
+    20% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); }
+    40% { transform: translate(2px, -2px); filter: hue-rotate(180deg); }
+    60% { transform: translate(-2px, -2px); filter: hue-rotate(270deg); }
+    80% { transform: translate(2px, 2px); filter: hue-rotate(360deg); }
+    100% { transform: translate(0); }
+}
+
+.chaos-invert { filter: invert(1); }
+.chaos-rotate { transform: rotate(180deg); }
+.chaos-blur { filter: blur(2px); }
+
+.simulated-error {
+    background: #ffcccc;
+    color: #a00;
+    padding: 20px;
+    border: 3px dashed red;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.simulated-error button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background: #a00;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
