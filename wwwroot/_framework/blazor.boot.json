@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "MiniGames",
   "resources": {
-    "hash": "sha256-OuFwNQHSWfV215z6dshhFH8C3rekGKkkyE6uLRAFSK8=",
+    "hash": "sha256-7LN7LnFXnBkNLo24rCx+pnFpHymRjz5FCwJmBGqZC9M=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-4g0GzvOXSwZvTLca4PrWJkoeltz+V9IF/hEFDcnVros="
     },
@@ -19,7 +19,7 @@
     "coreAssembly": {},
     "assembly": {
       "Microsoft.AspNetCore.Components.wasm": "sha256-tfF0q11+UZM1vtLQ0xgZVXIYanoZsmZKfnOYxtVRiPI=",
-      "Microsoft.AspNetCore.Components.Web.wasm": "sha256-ZhEymyNcX5acGQm9KqRcJ54R/OgJZcsmgvEjHuQjQM4=",
+      "Microsoft.AspNetCore.Components.Web.wasm": "sha256-4qUHF9Awz0utYn13zjY9/ARqnL6UIffUcIQp+hbHYdM=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-seVtoNDfzQciXue3LvPvIMA9hgox3tYbXZ3mK/GMOpI=",
       "Microsoft.Extensions.Configuration.wasm": "sha256-od574rRtVVRJj+24jbl8j3GdQFpxlJOpSx+pEMw1Q18=",
       "Microsoft.Extensions.Configuration.Abstractions.wasm": "sha256-XR+WUfg8LtnrwdXFBnV+qO3ROyp6cYCfl1AZajIAheM=",
@@ -43,12 +43,12 @@
       "System.Net.Primitives.wasm": "sha256-WVC1F84LZyi3BH0Qh29l77aoHS+I1f048Ni7JHWCb60=",
       "System.Private.Uri.wasm": "sha256-N2Q97PIuEZofOYtSQY31pA4Dz3uGK8AkBYCb8S5HWIA=",
       "System.Runtime.InteropServices.JavaScript.wasm": "sha256-uen3vMNjTv0ONRBXYBxlO5YkaiURAUH9oTdnsg5NZR8=",
-      "System.Runtime.wasm": "sha256-20+3ErMGaC7ACfMMZSwmNTR4H5u9kvgW+LgBicYPGAU=",
+      "System.Runtime.wasm": "sha256-SxBvErtCxDUnBCjZaIiwofhS2oHpmJydGwM8QqmfmjM=",
       "System.Text.Encodings.Web.wasm": "sha256-lDNhBYxzB2oWW3QF6CVQvqP8vU/iFCBV+gT4zkljouY=",
       "System.Text.Json.wasm": "sha256-OcOFHwNFFSa7XKg2flxQxYkz9h8jq3zgYV/Hvyw4+WE=",
       "System.Text.RegularExpressions.wasm": "sha256-EBNNP57+VS/OjAuJHOY1mCfaJCJQYORnhF3/w7wP5kI=",
-      "System.Private.CoreLib.wasm": "sha256-Wj12o2Cp/iqGQ5sMrW6jFExBqY66AwSdTqQWu21le0c=",
-      "MiniGames.wasm": "sha256-ox4TsTQCrePDOFn2IaJ0Brtq/svlORf8RCkkaFrVtjE="
+      "System.Private.CoreLib.wasm": "sha256-LFUZCCf6pCgA3grdx2lZib9zWYApMjbMTVptrd17LNM=",
+      "MiniGames.wasm": "sha256-MS5cyz6ZeCj/t2XUNPadD1DUaorrrHvwLjR94urvDek="
     }
   },
   "cacheBootResources": true,
