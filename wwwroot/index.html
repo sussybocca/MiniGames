@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="css/emulators/psp.css" />
     <!-- PC emulator -->
     <link rel="stylesheet" href="css/emulators/pc.css" />
+    <!-- Nintendo DS2 emulator -->
+    <link rel="stylesheet" href="css/emulators/nds2.css" />
 </head>
 <body>
     <div id="app">Loading...</div>
@@ -30,6 +32,18 @@
     <script src="js/psp-input.js"></script>
     <!-- PC emulator input -->
     <script src="js/pc-input.js"></script>
+    <!-- DS2 emulator input (injected via OnAfterRenderAsync, but we keep the JS helper) -->
+    <script>
+        window.getElementRect = function(element) {
+            const rect = element.getBoundingClientRect();
+            return {
+                left: rect.left,
+                top: rect.top,
+                width: rect.width,
+                height: rect.height
+            };
+        };
+    </script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 </html>
