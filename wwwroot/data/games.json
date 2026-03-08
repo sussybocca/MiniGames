@@ -3,4 +3,5 @@
   ["index.html", "snake"],
   ["game.html", "tetris"],
   ["play.html", "pong"]
+  ["cardrawing.html", "fire.x/test"]
 ]
