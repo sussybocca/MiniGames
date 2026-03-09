@@ -18,6 +18,12 @@
     <link rel="stylesheet" href="css/emulators/pc.css" />
     <!-- Nintendo DS2 emulator -->
     <link rel="stylesheet" href="css/emulators/nds2.css" />
+    <!-- Trippy emulator -->
+    <link rel="stylesheet" href="css/emulators/trippy.css" />
+    <!-- TV emulator -->
+    <link rel="stylesheet" href="css/emulators/tv.css" />
+    <!-- GameBoy2 emulator -->
+    <link rel="stylesheet" href="css/emulators/gameboy2.css" />
 </head>
 <body>
     <div id="app">Loading...</div>
@@ -32,7 +38,9 @@
     <script src="js/psp-input.js"></script>
     <!-- PC emulator input -->
     <script src="js/pc-input.js"></script>
-    <!-- DS2 emulator input (injected via OnAfterRenderAsync, but we keep the JS helper) -->
+    <!-- Trippy canvas helper -->
+    <script src="js/canvasHelper.js"></script>
+    <!-- DS2 emulator helper (touch coordinates) -->
     <script>
         window.getElementRect = function(element) {
             const rect = element.getBoundingClientRect();
@@ -44,6 +52,8 @@
             };
         };
     </script>
+    <!-- GameBoy2 emulator input -->
+    <script src="js/gameboy2-input.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 </html>

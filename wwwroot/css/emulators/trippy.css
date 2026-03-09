@@ -1,0 +1,212 @@
+.trippy-emulator {
+    background: #1a1a2e;
+    color: #e0e0ff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
+    transition: all 0.3s;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.trippy-emulator.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    border-radius: 0;
+    z-index: 1000;
+    overflow: auto;
+}
+
+.trippy-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #6b4f9c;
+}
+
+.trippy-header h2 {
+    margin: 0;
+    font-size: 2rem;
+    text-shadow: 0 0 10px cyan;
+}
+
+.header-controls .fullscreen-btn {
+    background: #2a1e12;
+    color: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.main-panel {
+    display: flex;
+    gap: 20px;
+    height: calc(100% - 80px);
+    min-height: 500px;
+}
+
+.editor-panel, .output-panel {
+    flex: 1;
+    background: #16213e;
+    border-radius: 15px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #6b4f9c;
+    box-shadow: 0 0 20px rgba(107, 79, 156, 0.5);
+}
+
+.panel-header {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #3b9eff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.code-editor {
+    width: 100%;
+    flex: 1;
+    background: #0f0f1f;
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    border: 2px solid #3b9eff;
+    border-radius: 10px;
+    padding: 10px;
+    resize: none;
+    outline: none;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.compile-btn, .reset-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.compile-btn {
+    background: #3b9eff;
+    color: black;
+}
+
+.compile-btn:hover {
+    background: #6b4f9c;
+    color: white;
+    box-shadow: 0 0 15px #6b4f9c;
+}
+
+.reset-btn {
+    background: #5a4a3a;
+    color: #ffd700;
+}
+
+.reset-btn:hover {
+    background: #b8860b;
+    color: black;
+}
+
+.output-content {
+    flex: 1;
+    background: #0f0f1f;
+    border-radius: 10px;
+    padding: 10px;
+    overflow: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #0f0;
+    border: 2px solid #3b9eff;
+    position: relative;
+}
+
+.compiling-spinner {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-top: 50px;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-output {
+    color: #f66;
+    white-space: pre-wrap;
+}
+
+.success-output {
+    color: #0f0;
+    white-space: pre-wrap;
+}
+
+.placeholder {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    margin-top: 50px;
+}
+
+/* Trippy effects (same as before) */
+.trippy-spin { animation: spin 2s infinite linear; }
+.trippy-rainbow { animation: rainbow 3s infinite; }
+.trippy-wave { animation: wave 1.5s infinite ease-in-out; }
+.trippy-pulse { animation: pulse 1s infinite; }
+.trippy-shake { animation: shake 0.5s infinite; }
+.trippy-glitch { animation: glitch 0.8s infinite; }
+
+@keyframes rainbow {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(360deg); }
+}
+
+@keyframes wave {
+    0% { transform: translate(0); }
+    25% { transform: translate(5px, -5px); }
+    50% { transform: translate(-5px, 5px); }
+    75% { transform: translate(5px, 5px); }
+    100% { transform: translate(0); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-2px, -2px); }
+    80% { transform: translate(2px, 2px); }
+    100% { transform: translate(0); }
+}
+
+@keyframes glitch {
+    0% { transform: skew(0deg); filter: hue-rotate(0deg); }
+    20% { transform: skew(2deg); filter: hue-rotate(90deg); }
+    40% { transform: skew(-2deg); filter: hue-rotate(180deg); }
+    60% { transform: skew(2deg); filter: hue-rotate(270deg); }
+    80% { transform: skew(-2deg); filter: hue-rotate(360deg); }
+    100% { transform: skew(0deg); filter: hue-rotate(0deg); }
+}
