@@ -3,6 +3,7 @@
   ["index.html", "snake"],
   ["game.html", "tetris"],
   ["play.html", "pong"],
-  ["basketballallstars.html", "BasketballAllStars"]
+  ["basketballstars.html", "BasketballAllStars"]
 
 ]
+
