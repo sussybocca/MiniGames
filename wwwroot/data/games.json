@@ -2,5 +2,7 @@
   ["index.html", "dude"],
   ["index.html", "snake"],
   ["game.html", "tetris"],
-  ["play.html", "pong"]
+  ["play.html", "pong"],
+  ["basketballallstars.html", "BasketballAllStars"]
+
 ]
