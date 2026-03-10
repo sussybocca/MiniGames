@@ -1,0 +1,370 @@
+.chaos-test-emulator {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 20px;
+    display: inline-block;
+    box-shadow: 0 20px 30px rgba(0,0,0,0.8);
+    border: 2px solid #888;
+}
+
+.console-shell {
+    background: #3a3a3a;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.screen-bezel {
+    background: #111;
+    border-radius: 10px;
+    padding: 10px;
+    border: 2px solid #555;
+    box-shadow: inset 0 0 10px #000;
+    position: relative;
+    overflow: hidden;
+}
+
+.screen-content {
+    background: #000;
+    border-radius: 5px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    position: relative;
+}
+
+.game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #000;
+}
+
+/* Screen effects */
+.scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(255,255,255,0.05) 1px, transparent 2px);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+}
+
+.pixel-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 4px 4px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.screen-glare {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    transform: rotate(30deg);
+    animation: glareMove 10s infinite linear;
+    pointer-events: none;
+    z-index: 4;
+}
+
+@keyframes glareMove {
+    0% { transform: rotate(30deg) translateX(-100%); }
+    100% { transform: rotate(30deg) translateX(100%); }
+}
+
+/* Controls */
+.controls-panel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 15px;
+    gap: 15px;
+    background: #2a2a2a;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid #666;
+}
+
+.dpad-section {
+    flex: 1;
+    min-width: 120px;
+}
+
+.dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+}
+
+.dpad button {
+    background: #333;
+    color: #fff;
+    border: 2px solid #666;
+    border-radius: 8px;
+    font-size: 20px;
+    padding: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #222;
+    transition: all 0.1s;
+}
+
+.dpad button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.dpad-up { grid-column: 2; }
+.dpad-left { grid-column: 1; grid-row: 2; }
+.dpad-right { grid-column: 3; grid-row: 2; }
+.dpad-down { grid-column: 2; grid-row: 3; }
+
+.action-section {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.action-section button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #666;
+    box-shadow: 0 4px 0 #222;
+    transition: all 0.1s;
+}
+
+.action-section button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.btn-a { background: #f44; }
+.btn-b { background: #4f4; color: black; }
+.btn-x { background: #44f; }
+.btn-y { background: #ff4; color: black; }
+
+.shoulder-section {
+    display: flex;
+    gap: 15px;
+}
+
+.shoulder-section button {
+    padding: 8px 16px;
+    background: #444;
+    color: #ffd700;
+    border: 2px solid #666;
+    border-radius: 15px;
+    font-size: 14px;
+    box-shadow: 0 4px 0 #222;
+}
+
+.system-section {
+    display: flex;
+    gap: 10px;
+}
+
+.system-section button {
+    padding: 6px 12px;
+    background: #333;
+    color: #ffd700;
+    border: 2px solid #666;
+    border-radius: 8px;
+    font-size: 12px;
+    box-shadow: 0 4px 0 #222;
+}
+
+/* Status panel */
+.status-panel {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    background: #111;
+    padding: 8px;
+    border-radius: 10px;
+    color: #0f0;
+    font-family: monospace;
+    font-size: 12px;
+    border: 1px solid #666;
+}
+
+.power-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #333;
+    margin-top: 2px;
+}
+.power-indicator.on {
+    background: #0f0;
+    box-shadow: 0 0 5px #0f0;
+}
+
+/* Simulated error */
+.simulated-error {
+    background: #800;
+    color: #ff0;
+    padding: 20px;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: monospace;
+}
+
+.simulated-error button {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: #ff0;
+    color: #800;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* Chaos effect classes */
+.glitch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(255,0,255,0.2) 0px, rgba(0,255,255,0.2) 2px, transparent 4px);
+    mix-blend-mode: multiply;
+    animation: glitchMove 0.1s infinite;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes glitchMove {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-2px, -2px); }
+    80% { transform: translate(2px, 2px); }
+    100% { transform: translate(0); }
+}
+
+.static-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-radial-gradient(circle at 30% 40%, rgba(255,255,255,0.2) 0px, transparent 2px);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 10;
+    animation: staticFlicker 0.05s infinite;
+}
+
+@keyframes staticFlicker {
+    0% { opacity: 0.1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.1; }
+}
+
+.color-shift {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    mix-blend-mode: difference;
+    animation: colorCycle 0.5s infinite;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes colorCycle {
+    0% { background: rgba(255,0,0,0.2); }
+    25% { background: rgba(0,255,0,0.2); }
+    50% { background: rgba(0,0,255,0.2); }
+    75% { background: rgba(255,255,0,0.2); }
+    100% { background: rgba(255,0,255,0.2); }
+}
+
+.chaos-shake {
+    animation: deviceShake 0.2s infinite;
+}
+@keyframes deviceShake {
+    0% { transform: translate(0); }
+    20% { transform: translate(-3px, 3px); }
+    40% { transform: translate(3px, -3px); }
+    60% { transform: translate(-3px, -3px); }
+    80% { transform: translate(3px, 3px); }
+    100% { transform: translate(0); }
+}
+
+.chaos-spin {
+    animation: spin 0.5s infinite linear;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.chaos-pixelate {
+    filter: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><filter id='pixelate'><feFlood x='4' y='4' height='2' width='2'/><feComposite width='8' height='8'/></filter></svg>#pixelate");
+    image-rendering: pixelated;
+}
+
+.chaos-wave {
+    animation: wave 0.3s infinite ease-in-out;
+}
+@keyframes wave {
+    0% { transform: skew(0deg); }
+    25% { transform: skew(2deg); }
+    75% { transform: skew(-2deg); }
+    100% { transform: skew(0deg); }
+}
+
+.chaos-vhs {
+    animation: vhs 0.1s infinite;
+}
+@keyframes vhs {
+    0% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
+    20% { transform: translate(-1px, 1px) scale(1.01); filter: hue-rotate(10deg); }
+    40% { transform: translate(1px, -1px) scale(0.99); filter: hue-rotate(-10deg); }
+    60% { transform: translate(-1px, -1px) scale(1.01); filter: hue-rotate(20deg); }
+    80% { transform: translate(1px, 1px) scale(0.99); filter: hue-rotate(-20deg); }
+    100% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
+}
+
+.chaos-corrupt {
+    filter: blur(1px) contrast(2) brightness(0.8);
+    mix-blend-mode: difference;
+}
+
+.chaos-lag {
+    animation: lagStutter 0.5s infinite;
+}
+@keyframes lagStutter {
+    0% { transform: translate(0); opacity: 1; }
+    10% { transform: translate(-1px, 1px); opacity: 0.9; }
+    20% { transform: translate(1px, -1px); opacity: 0.8; }
+    30% { transform: translate(-1px, -1px); opacity: 0.9; }
+    40% { transform: translate(1px, 1px); opacity: 1; }
+    50% { transform: translate(0); opacity: 1; }
+    60% { transform: scale(1.01); opacity: 0.9; }
+    70% { transform: scale(0.99); opacity: 0.8; }
+    80% { transform: scale(1); opacity: 0.9; }
+    90% { transform: scale(1.02); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
