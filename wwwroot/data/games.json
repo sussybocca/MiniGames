@@ -1,9 +1,32 @@
 [
-  ["index.html", "dude"],
-  ["index.html", "snake"],
-  ["game.html", "tetris"],
-  ["play.html", "pong"],
-  ["basketballstars.html", "BasketballAllStars"]
-
+  {
+    "gamePath": "index.html",
+    "name": "dude",
+    "folder": "dude"
+  },
+  {
+    "gamePath": "index.html",
+    "name": "snake",
+    "folder": "snake"
+  },
+  {
+    "gamePath": "game.html",
+    "name": "tetris",
+    "folder": "tetris"
+  },
+  {
+    "gamePath": "play.html",
+    "name": "pong",
+    "folder": "pong"
+  },
+  {
+    "gamePath": "dude.gb",
+    "name": "fire (GB)",
+    "folder": "fire-gb"
+  },
+  {
+    "gamePath": "dude.html",
+    "name": "fire (HTML)",
+    "folder": "fire-html"
+  }
 ]
-
