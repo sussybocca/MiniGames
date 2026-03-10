@@ -22,7 +22,7 @@
   {
     "gamePath": "dude.gb",
     "name": "fire (GB)",
-    "folder": "fire-gb"
+    "folder": "fire"
   },
   {
     "gamePath": "dude.html",
@@ -30,3 +30,4 @@
     "folder": "fire-html"
   }
 ]
+
