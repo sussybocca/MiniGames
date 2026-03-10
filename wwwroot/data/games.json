@@ -3,7 +3,8 @@
   ["index.html", "snake", "snake"],
   ["game.html", "tetris", "tetris"],
   ["play.html", "pong", "pong"],
-  ["dude.gb", "fire (GB)", "fire-gb"],
+  ["dude.gb", "fire", "fire"],
   ["dude.html", "fire (HTML)", "fire-html"],
   ["basketballstars.html", "BasketballAllStars", "basketballstars"]
 ]
+
