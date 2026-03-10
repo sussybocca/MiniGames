@@ -1,33 +1,9 @@
 [
-  {
-    "gamePath": "index.html",
-    "name": "dude",
-    "folder": "dude"
-  },
-  {
-    "gamePath": "index.html",
-    "name": "snake",
-    "folder": "snake"
-  },
-  {
-    "gamePath": "game.html",
-    "name": "tetris",
-    "folder": "tetris"
-  },
-  {
-    "gamePath": "play.html",
-    "name": "pong",
-    "folder": "pong"
-  },
-  {
-    "gamePath": "dude.gb",
-    "name": "fire (GB)",
-    "folder": "fire"
-  },
-  {
-    "gamePath": "dude.html",
-    "name": "fire (HTML)",
-    "folder": "fire-html"
-  }
+  ["index.html", "dude", "dude"],
+  ["index.html", "snake", "snake"],
+  ["game.html", "tetris", "tetris"],
+  ["play.html", "pong", "pong"],
+  ["dude.gb", "fire (GB)", "fire-gb"],
+  ["dude.html", "fire (HTML)", "fire-html"],
+  ["basketballstars.html", "BasketballAllStars", "basketballstars"]
 ]
-
