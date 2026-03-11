@@ -1,0 +1,25 @@
+MiniGames Custom Source Code License
+
+Copyright (c) 2025 MiniGames
+
+Permission is hereby granted to any person obtaining a copy of this software and associated documentation files (the "Software"), to view, fork, and use the Software for personal or educational purposes, subject to the following conditions:
+
+1. **No Unauthorized Modifications**  
+   You may not modify, adapt, translate, or create derivative works of the Software, or any portion thereof, unless such modifications are explicitly authorized in writing by the original authors. Any unauthorized modification is strictly prohibited.
+
+2. **Leak Exception**  
+   In the event that the source code is leaked or made publicly available through unofficial channels, the prohibition on modifications is temporarily waived for the purpose of security research and bug fixes. However, you must notify the original authors immediately and collaborate to reinstate the official version. After the leak is resolved, you must cease any further modifications and revert to the official unmodified code.
+
+3. **No Commercial Use**  
+   You may not use the Software for commercial purposes without prior written consent from the authors.
+
+4. **Attribution**  
+   Any fork or public instance of the Software must retain this license and clearly credit the original authors. A visible link to the official repository must be provided.
+
+5. **Takedown Policy**  
+   If we discover any public instance of the Software that has been modified without authorization, we will politely request that the instance be taken down or that the modifications be removed. If the request is not honored, we reserve the right to take further legal action.
+
+6. **No Warranty**  
+   The Software is provided "AS IS", without warranty of any kind, express or implied. In no event shall the authors be liable for any claim, damages, or other liability arising from the use of the Software.
+
+By forking or using this Software, you agree to these terms.
