@@ -47,7 +47,7 @@ html, body {
     flex-direction: column;
     padding: 1.5rem;
     position: relative;
-    overflow-y: auto;
+    overflow-y: auto; /* Keep sidebar scrollable */
     z-index: 10;
 }
 
@@ -230,7 +230,8 @@ html, body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    overflow-y: auto; /* Enable vertical scrolling */
+    min-height: 0;    /* Critical for flex child scrolling */
     background: var(--bg-dark);
     position: relative;
 }
@@ -272,6 +273,7 @@ html, body {
     padding: 2rem;
     position: relative;
     z-index: 1;
+    min-height: 0; /* Ensure inner content can shrink/scroll properly */
 }
 
 /* Game grid */
