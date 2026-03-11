@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "MiniGames",
   "resources": {
-    "hash": "sha256-t7rlepuS7/U3gIqolg83/1Re1psxfgZ5p5vTqqaQnL4=",
+    "hash": "sha256-D0HFpTzzq4Fo/GqpVX42VGniPQIeHXr21pVBfiDQfEA=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-4g0GzvOXSwZvTLca4PrWJkoeltz+V9IF/hEFDcnVros="
     },
@@ -94,7 +94,7 @@
       "System.Xml.XPath.XDocument.dll": "sha256-OeCs1gfKu2Nxl/UAwNW9/tvZlu+CZUpyNf8f+vl4UIo=",
       "System.dll": "sha256-sQJRRSRTlVzIoAlrsVGYHQuTY/XBzNQUWxwwJgqnvjY=",
       "System.Private.CoreLib.dll": "sha256-zHv8WuNqd+qApkMDS56xONDVbjeFfAdcK7vtxF2Xoqw=",
-      "MiniGames.dll": "sha256-dm1qQ9VBXCSxwS4GXg8Oux8aRRDp3OGm/W4aeeNxIxE="
+      "MiniGames.dll": "sha256-wdQEXUF5UFZxc9ODmOfg909+lT2Nx4EleqWb5d3qK/c="
     },
     "satelliteResources": {
       "cs": {
