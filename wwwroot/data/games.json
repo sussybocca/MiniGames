@@ -5,6 +5,7 @@
   ["play.html", "pong", "pong"],
   ["dude.gb", "fire", "fire"],
   ["dude.html", "fire (HTML)", "fire-html"],
-  ["basketballstars.html", "BasketballAllStars", "basketballstars"]
+ ["basketballstars.html", "BasketballAllStars", "BasketballAllStars"]
 ]
+
 
