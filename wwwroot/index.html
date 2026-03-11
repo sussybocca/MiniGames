@@ -59,15 +59,7 @@
     <!-- DS3 emulator core -->
     <script src="js/ds3-emulator-core.js"></script>
     <!-- jsGB library for GameBoy emulation -->
-    <!-- GameBoy emulator core (jsGB) from unpkg CDN with local fallback -->
-<script src="https://unpkg.com/jsgb@latest/dist/jsgb.js"></script>
-<script>
-    // Fallback if CDN fails
-    if (typeof JSGB === 'undefined') {
-        document.write('<script src="js/jsgb.js"><\/script>');
-    }
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/jsgb@latest/dist/jsgb.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
-
 </html>
