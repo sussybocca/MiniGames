@@ -1,0 +1,16 @@
+name: 'Vote Counter'
+description: 'Counts 👍 reactions on issues and adds labels based on vote count.'
+inputs:
+  repo-token:
+    description: 'GitHub token'
+    required: true
+  threshold:
+    description: 'Minimum votes to label "high-demand"'
+    required: false
+    default: '5'
+outputs:
+  updated-issues:
+    description: 'Number of issues that had labels updated'
+runs:
+  using: 'node16'
+  main: 'index.js'
