@@ -1,0 +1,26 @@
+@page "/legal"
+@namespace MiniGames.CustomServices
+@inject ILegalService LegalService
+@inject NavigationManager Navigation
+
+<PageTitle>Legal Terms & Privacy</PageTitle>
+
+<div class="legal-container">
+    <h1>⚖️ Legal Information</h1>
+
+    <div class="legal-section">
+        <h2>Terms of Service</h2>
+        <div class="legal-text">@LegalService.GetTermsOfService()</div>
+    </div>
+
+    <div class="legal-section">
+        <h2>Privacy Policy</h2>
+        <div class="legal-text">@LegalService.GetPrivacyPolicy()</div>
+    </div>
+
+    <button class="back-home" @onclick="GoHome">← Return Home</button>
+</div>
+
+@code {
+    private void GoHome() => Navigation.NavigateTo("/");
+}

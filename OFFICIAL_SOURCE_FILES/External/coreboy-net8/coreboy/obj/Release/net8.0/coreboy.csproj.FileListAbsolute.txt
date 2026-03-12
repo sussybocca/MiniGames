@@ -1,0 +1,12 @@
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\coreboy.deps.json
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\coreboy.dll
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\coreboy.pdb
+D:\MiniGames\External\coreboy-net8\coreboy\obj\Release\net8.0\coreboy.csproj.AssemblyReference.cache
+D:\MiniGames\External\coreboy-net8\coreboy\obj\Release\net8.0\coreboy.GeneratedMSBuildEditorConfig.editorconfig
+D:\MiniGames\External\coreboy-net8\coreboy\obj\Release\net8.0\coreboy.AssemblyInfoInputs.cache
+D:\MiniGames\External\coreboy-net8\coreboy\obj\Release\net8.0\coreboy.AssemblyInfo.cs
+D:\MiniGames\External\coreboy-net8\coreboy\obj\Release\net8.0\coreboy.csproj.CoreCompileInputs.cache
+D:\MiniGames\External\coreboy-net8\coreboy\obj\Release\net8.0\coreboy.dll
+D:\MiniGames\External\coreboy-net8\coreboy\obj\Release\net8.0\refint\coreboy.dll
+D:\MiniGames\External\coreboy-net8\coreboy\obj\Release\net8.0\coreboy.pdb
+D:\MiniGames\External\coreboy-net8\coreboy\obj\Release\net8.0\ref\coreboy.dll

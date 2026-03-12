@@ -1,0 +1,151 @@
+@page "/game/{*gamePath}"
+@using MiniGames.Emulators.DS
+@using MiniGames.Emulators.Mobile
+@using MiniGames.Emulators.Computer
+
+@using MiniGames.Emulators.PC
+@using MiniGames.Emulators.NintendoDS2
+
+@using MiniGames.Emulators.Test
+@using MiniGames.Emulators.DS3
+@using MiniGames.Emulators.GameBoy3
+@using MiniGames.Emulators.JSONService
+@inject GameService GameService
+@inject NavigationManager Navigation
+@inject RouteChaosService ChaosRoute
+
+<PageTitle>Playing @game?.Name</PageTitle>
+
+@if (game != null)
+{
+    <div class="game-metadata">
+        @if (!string.IsNullOrEmpty(game.Developer))
+        {
+            <span><strong>Developer:</strong> @game.Developer</span>
+        }
+        @if (game.ReleaseYear.HasValue)
+        {
+            <span><strong>Released:</strong> @game.ReleaseYear</span>
+        }
+        @if (!string.IsNullOrEmpty(game.Genre))
+        {
+            <span><strong>Genre:</strong> @game.Genre</span>
+        }
+        @if (!string.IsNullOrEmpty(game.Description))
+        {
+            <p class="game-description">@game.Description</p>
+        }
+        @if (game.Tags != null && game.Tags.Any())
+        {
+            <div class="game-tags">
+                @foreach (var tag in game.Tags)
+                {
+                    <span class="tag">@tag</span>
+                }
+            </div>
+        }
+    </div>
+}
+
+<div class="device-selector">
+    <label>Device Family:</label>
+    <select @bind="selectedFamily">
+        <option value="computer">Computer</option>
+        <option value="mobile">Mobile</option>
+        <option value="ds">Nintendo DS</option>
+    
+    
+      
+        <option value="pc">PC (Custom)</option>
+        <option value="nds2">Nintendo DS2</option>
+        
+        <option value="chaostest">🌀 Chaos Test</option>
+        <option value="ds3">🎮 Nintendo DS3</option>
+        <option value="gameboy3">🎮 GameBoy 3</option>
+        <option value="json">📄 JSON Service</option>
+    </select>
+
+   
+    <button @onclick="Play">Launch Game</button>
+</div>
+
+@if (showGame)
+{
+    switch (selectedFamily)
+    {
+        case "ds":
+            <DSEmulator GameUrl="@game?.GamePath" />
+            break;
+        case "mobile":
+            <MobileEmulator GameUrl="@game?.GamePath" />
+            break;
+        case "computer":
+            <ComputerEmulator GameUrl="@game?.GamePath" />
+            break;
+       
+            break;
+        case "atari":
+            // Atari emulator temporarily disabled – remove this line when ready
+            <div>Atari emulator under maintenance</div>
+            break;
+      
+        case "pc":
+            <PCEmulator GameUrl="@game?.GamePath" />
+            break;
+        case "nds2":
+            <NintendoDS2 GameUrl="@game?.GamePath" />
+            break;
+       
+        case "chaostest":
+            <ChaosTestEmulator GameUrl="@game?.GamePath" />
+            break;
+        case "ds3":
+            <DS3Emulator gamePath="@game?.Folder" />
+            break;
+        case "gameboy3":
+            <GameBoy3Emulator gamePath="@game?.Folder" />
+            break;
+        case "json":
+            <JSONServiceEmulator />
+            break;
+    }
+}
+
+@code {
+    [Parameter] public string? gamePath { get; set; }
+
+    private GameInfo? game;
+    private string selectedFamily = "computer";
+    private string selectedChannel = "stable";
+    private bool showGame;
+
+    protected override async Task OnInitializedAsync()
+    {
+        string? realFolder = null;
+        if (!string.IsNullOrEmpty(gamePath))
+        {
+            realFolder = ChaosRoute.GetRealPath(gamePath);
+        }
+
+        realFolder ??= gamePath;
+
+        if (string.IsNullOrEmpty(realFolder))
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        var allGames = await GameService.GetGamesAsync();
+        game = allGames.FirstOrDefault(g => g.Folder.Equals(realFolder, StringComparison.OrdinalIgnoreCase));
+
+        if (game == null)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private void Play()
+    {
+        showGame = true;
+    }
+}

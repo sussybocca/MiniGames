@@ -1,0 +1,18 @@
+@page "/license"
+@namespace MiniGames.CustomServices
+@inject ILicenseService LicenseService
+@inject NavigationManager Navigation
+
+<PageTitle>License</PageTitle>
+
+<div class="license-container">
+    <h1>📜 Software License</h1>
+    <div class="license-text">
+        @LicenseService.GetLicenseText()
+    </div>
+    <button class="back-home" @onclick="GoHome">← Return Home</button>
+</div>
+
+@code {
+    private void GoHome() => Navigation.NavigateTo("/");
+}

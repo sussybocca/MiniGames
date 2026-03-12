@@ -1,0 +1,69 @@
+@page "/"
+@using MiniGames.Models
+@using MiniGames.Emulators.Computer
+@inject GameService GameService
+@inject ChaosService Chaos
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>MiniGames</PageTitle>
+
+<h1 class="glitch @Chaos.GetRandomThemeClass()">MiniGames</h1>
+
+<div class="game-grid">
+    @foreach (var game in games)
+    {
+        <div class="game-card"
+             @onmouseover="() => ShowPreview(game)"
+             @onmouseleave="HidePreview">
+            <div class="preview-container">
+                @if (previewGame == game)
+                {
+                    <ComputerEmulator GameUrl="@game.GamePath" />
+                }
+                else
+                {
+                    <div class="preview-placeholder">
+                        <span>@game.Name</span>
+                    </div>
+                }
+            </div>
+            <div class="game-info">
+                <h3>@game.Name</h3>
+                <button @onclick="() => InstallGame(game)">Install</button>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Support Footer -->
+<div class="support-footer">
+    <h4>Need help?</h4>
+    <div class="support-links">
+        <a href="/emergency">🚨 Emergency</a>
+        <a href="/error">⚠️ Report Error</a>
+        <a href="/help">📚 Help</a>
+        <a href="/guide">📖 Guide</a>
+        <a href="/license">📜 License</a>
+        <a href="/legal">⚖️ Legal</a>
+    </div>
+</div>
+
+@code {
+    private List<GameInfo> games = new();
+    private GameInfo? previewGame;
+
+    protected override async Task OnInitializedAsync()
+    {
+        games = await GameService.GetGamesAsync();
+        Chaos.LogRandomConsoleError(JS);
+    }
+
+    private void ShowPreview(GameInfo game) => previewGame = game;
+    private void HidePreview() => previewGame = null;
+
+    private void InstallGame(GameInfo game)
+    {
+        Navigation.NavigateTo($"/game/{game.Folder}");
+    }
+}

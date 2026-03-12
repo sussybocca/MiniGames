@@ -1,0 +1,276 @@
+@namespace MiniGames.Emulators.DS3
+@attribute [Route("/ds3/play/{gamePath?}")]
+@inject GameService GameService
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+@inject HttpClient Http
+
+<div class="ds3-console">
+    <div class="ds3-shell">
+        <!-- Top Screen -->
+        <div class="top-section">
+            <div class="screen-bezel">
+                <div class="screen-glare"></div>
+                <div class="screen-content">
+                    @if (_showLibrary)
+                    {
+                        <div class="library-view">
+                            <h3>Game Library</h3>
+                            <div class="cartridge-grid">
+                                @foreach (var game in _games)
+                                {
+                                    <div class="cartridge-item @(game.Folder == _selectedGame?.Folder ? "selected" : "")" @onclick="() => SelectGame(game)">
+                                        <img src="@($"/images/cartridges/{game.Folder}.png")" alt="@game.Name" onerror="this.src='/images/cartridges/placeholder.png'" />
+                                        <span>@game.Name</span>
+                                    </div>
+                                }
+                            </div>
+                            <button @onclick="CloseLibrary">Close</button>
+                        </div>
+                    }
+                    else if (_gameLoaded)
+                    {
+                        <canvas @ref="_canvas" class="game-canvas" width="160" height="144"></canvas>
+                    }
+                    else
+                    {
+                        <div class="no-game">Insert Game Cartridge</div>
+                    }
+                </div>
+                <div class="scanlines"></div>
+                <div class="pixel-grid"></div>
+            </div>
+            <div class="top-details">
+                <span class="model">Nintendo DS3</span>
+                <div class="led @(_powerOn ? "on" : "off")"></div>
+            </div>
+        </div>
+
+        <!-- Hinge -->
+        <div class="hinge"></div>
+
+        <!-- Bottom Section (with touch screen and controls) -->
+        <div class="bottom-section">
+            <div class="screen-bezel">
+                <div class="screen-glare"></div>
+                <div class="screen-content bottom-touch">
+                    @if (_touchMode && _gameLoaded)
+                    {
+                        <div class="touch-overlay"
+                             @ontouchstart="HandleTouchStart"
+                             @ontouchmove="HandleTouchMove"
+                             @ontouchend="HandleTouchEnd"
+                             @onmousedown="HandleMouseDown"
+                             @onmousemove="HandleMouseMove"
+                             @onmouseup="HandleMouseUp">
+                            <div class="stylus-indicator" style="left: @(_touchX)%; top: @(_touchY)%;"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="touch-placeholder">Touch screen to enable stylus</div>
+                    }
+                </div>
+                <div class="scanlines"></div>
+                <div class="pixel-grid"></div>
+            </div>
+
+            <!-- Physical Controls -->
+            <div class="controls">
+                <div class="dpad">
+                    <button class="dpad-up" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("up", "down")' @onmouseup='() => SendKey("up", "up")' @ontouchstart='() => SendKey("up", "down")' @ontouchend='() => SendKey("up", "up")'>↑</button>
+                    <button class="dpad-down" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("down", "down")' @onmouseup='() => SendKey("down", "up")' @ontouchstart='() => SendKey("down", "down")' @ontouchend='() => SendKey("down", "up")'>↓</button>
+                    <button class="dpad-left" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("left", "down")' @onmouseup='() => SendKey("left", "up")' @ontouchstart='() => SendKey("left", "down")' @ontouchend='() => SendKey("left", "up")'>←</button>
+                    <button class="dpad-right" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("right", "down")' @onmouseup='() => SendKey("right", "up")' @ontouchstart='() => SendKey("right", "down")' @ontouchend='() => SendKey("right", "up")'>→</button>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-a" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("a", "down")' @onmouseup='() => SendKey("a", "up")' @ontouchstart='() => SendKey("a", "down")' @ontouchend='() => SendKey("a", "up")'>A</button>
+                    <button class="btn-b" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("b", "down")' @onmouseup='() => SendKey("b", "up")' @ontouchstart='() => SendKey("b", "down")' @ontouchend='() => SendKey("b", "up")'>B</button>
+                    <button class="btn-x" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("select", "down")' @onmouseup='() => SendKey("select", "up")' @ontouchstart='() => SendKey("select", "down")' @ontouchend='() => SendKey("select", "up")'>X</button>
+                    <button class="btn-y" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("start", "down")' @onmouseup='() => SendKey("start", "up")' @ontouchstart='() => SendKey("start", "down")' @ontouchend='() => SendKey("start", "up")'>Y</button>
+                </div>
+                <div class="shoulder-buttons">
+                    <button class="btn-l" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("l", "down")' @onmouseup='() => SendKey("l", "up")'>L</button>
+                    <button class="btn-r" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("r", "down")' @onmouseup='() => SendKey("r", "up")'>R</button>
+                </div>
+                <div class="system-buttons">
+                    <button class="btn-start" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("start", "down")' @onmouseup='() => SendKey("start", "up")'>Start</button>
+                    <button class="btn-select" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("select", "down")' @onmouseup='() => SendKey("select", "up")'>Select</button>
+                </div>
+            </div>
+
+            <!-- Additional controls: Library button, Power, etc. -->
+            <div class="utility-controls">
+                <button class="lib-btn" @onclick="ToggleLibrary">📚 Library</button>
+                <button class="power-btn" @onclick="TogglePower">⏻</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? gamePath { get; set; }
+
+    private List<GameInfo> _games = new();
+    private GameInfo? _selectedGame;
+    private bool _gameLoaded = false;
+    private ElementReference _canvas;
+    private bool _powerOn = true;
+    private bool _showLibrary = false;
+    private bool _touchMode = true;
+    private double _touchX = 50;
+    private double _touchY = 50;
+    private bool _isMouseDown = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadGames();
+        if (!string.IsNullOrEmpty(gamePath))
+        {
+            _selectedGame = _games.FirstOrDefault(g => g.GamePath == gamePath || g.Folder == gamePath);
+            if (_selectedGame != null && _powerOn)
+            {
+                await LoadRomAndStartEmulator(_selectedGame);
+            }
+        }
+    }
+
+    private async Task LoadGames()
+    {
+        _games = await GameService.GetGamesAsync();
+        // For DS3, we could filter by platform if we add a field
+    }
+
+    private async void SelectGame(GameInfo game)
+    {
+        _selectedGame = game;
+        _showLibrary = false;
+        if (_powerOn)
+        {
+            await LoadRomAndStartEmulator(game);
+        }
+        StateHasChanged();
+    }
+
+    private async Task LoadRomAndStartEmulator(GameInfo game)
+    {
+        try
+        {
+            // Fetch ROM file as byte array
+            var romBytes = await Http.GetByteArrayAsync(game.GamePath);
+            // Convert to base64 for JS
+            var base64 = Convert.ToBase64String(romBytes);
+            await JS.InvokeVoidAsync("ds3EmulatorCore.start", _canvas, base64);
+            _gameLoaded = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load ROM: {ex.Message}");
+            _gameLoaded = false;
+        }
+    }
+
+    private void ToggleLibrary()
+    {
+        _showLibrary = !_showLibrary;
+    }
+
+    private void CloseLibrary()
+    {
+        _showLibrary = false;
+    }
+
+    private async void TogglePower()
+    {
+        _powerOn = !_powerOn;
+        if (_powerOn)
+        {
+            if (_selectedGame != null)
+                await LoadRomAndStartEmulator(_selectedGame);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("ds3EmulatorCore.stop");
+            _gameLoaded = false;
+        }
+    }
+
+    private async Task SendKey(string key, string action)
+    {
+        if (!_powerOn || !_gameLoaded) return;
+        await JS.InvokeVoidAsync("ds3EmulatorCore.input", key, action);
+    }
+
+    // Touch handlers (for future touch-enabled games)
+    private async Task HandleTouchStart(TouchEventArgs e) { /* Not used by GameBoy */ }
+    private async Task HandleTouchMove(TouchEventArgs e) { }
+    private async Task HandleTouchEnd(TouchEventArgs e) { }
+    private async Task HandleMouseDown(MouseEventArgs e) { }
+    private async Task HandleMouseMove(MouseEventArgs e) { }
+    private async Task HandleMouseUp(MouseEventArgs e) { }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("eval", @"
+                window.ds3EmulatorCore = {
+                    emulator: null,
+                    canvas: null,
+                    start: (canvas, romBase64) => {
+                        if (!window.JSGB) {
+                            console.error('JSGB library not loaded');
+                            return;
+                        }
+                        ds3EmulatorCore.canvas = canvas;
+                        // Convert base64 to array buffer
+                        const binary = atob(romBase64);
+                        const len = binary.length;
+                        const bytes = new Uint8Array(len);
+                        for (let i = 0; i < len; i++) {
+                            bytes[i] = binary.charCodeAt(i);
+                        }
+                        // Initialize emulator
+                        ds3EmulatorCore.emulator = new JSGB(canvas, { rom: bytes });
+                        ds3EmulatorCore.emulator.start();
+                    },
+                    stop: () => {
+                        if (ds3EmulatorCore.emulator) {
+                            ds3EmulatorCore.emulator.stop();
+                            ds3EmulatorCore.emulator = null;
+                        }
+                    },
+                    input: (key, action) => {
+                        if (!ds3EmulatorCore.emulator) return;
+                        const buttonMap = {
+                            'up': 0,    // UP
+                            'down': 1,  // DOWN
+                            'left': 2,  // LEFT
+                            'right': 3, // RIGHT
+                            'a': 4,     // A
+                            'b': 5,     // B
+                            'select': 6,// SELECT
+                            'start': 7  // START
+                        };
+                        const btn = buttonMap[key];
+                        if (btn !== undefined) {
+                            if (action === 'down') {
+                                ds3EmulatorCore.emulator.press(btn);
+                            } else {
+                                ds3EmulatorCore.emulator.release(btn);
+                            }
+                        }
+                    }
+                };
+            ");
+        }
+    }
+
+    private class DomRect
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
+}

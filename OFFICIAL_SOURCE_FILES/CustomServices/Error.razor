@@ -1,0 +1,92 @@
+@page "/error"
+@namespace MiniGames.CustomServices
+@inject IErrorService ErrorService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Report an Error</PageTitle>
+
+<div class="error-page">
+    <h1>⚠️ Report a Problem</h1>
+    <p>Help us improve by providing details about the issue you encountered.</p>
+
+    @if (_submitted)
+    {
+        <div class="thank-you-message">
+            <h2>Thank you for your report!</h2>
+            <p>Our team has been notified. If you provided contact information, we may follow up.</p>
+            <button class="back-home" @onclick="GoHome">← Return Home</button>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="@_model" OnValidSubmit="@SubmitReport">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="description">Describe the error *</label>
+                <InputTextArea id="description" @bind-Value="_model.Description" rows="5" placeholder="What happened? What did you expect?" />
+                <ValidationMessage For="@(() => _model.Description)" />
+            </div>
+
+            <div class="form-group">
+                <label for="steps">Steps to reproduce (if known)</label>
+                <InputTextArea id="steps" @bind-Value="_model.Steps" rows="3" placeholder="1. Go to... 2. Click... 3. See error" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Your email (optional)</label>
+                <InputText id="email" @bind-Value="_model.Email" placeholder="If you'd like us to contact you" />
+            </div>
+
+            <div class="form-group">
+                <label for="includeLogs">
+                    <InputCheckbox id="includeLogs" @bind-Value="_model.IncludeLogs" />
+                    Include diagnostic logs (helps us debug faster)
+                </label>
+            </div>
+
+            <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Sending..." : "Send Report")</button>
+        </EditForm>
+
+        <button class="back-home" @onclick="GoHome">← Cancel</button>
+    }
+</div>
+
+@code {
+    private ErrorReportModel _model = new();
+    private bool _isSubmitting;
+    private bool _submitted;
+
+    private async Task SubmitReport()
+    {
+        _isSubmitting = true;
+        try
+        {
+            // Include browser info automatically
+            var browserInfo = await JS.InvokeAsync<string>("eval", "navigator.userAgent");
+            _model.BrowserInfo = browserInfo;
+
+            await ErrorService.SubmitErrorReportAsync(_model);
+            _submitted = true;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private void GoHome() => Navigation.NavigateTo("/");
+
+    public class ErrorReportModel
+    {
+        [Required(ErrorMessage = "Please describe the error.")]
+        public string Description { get; set; } = string.Empty;
+        public string? Steps { get; set; }
+        [EmailAddress]
+        public string? Email { get; set; }
+        public bool IncludeLogs { get; set; }
+        public string? BrowserInfo { get; set; } // filled automatically
+    }
+}

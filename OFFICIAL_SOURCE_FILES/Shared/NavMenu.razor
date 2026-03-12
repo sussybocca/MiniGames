@@ -1,0 +1,214 @@
+@inject NavigationManager Navigation
+
+<div class="nav-menu">
+    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+        <span class="nav-icon">🏠</span> Home
+    </NavLink>
+    <NavLink class="nav-link" href="about">
+        <span class="nav-icon">ℹ️</span> About
+    </NavLink>
+
+    @{
+        string GetIcon(bool isOpen) => isOpen ? "-" : "+";
+    }
+
+    <!-- DS Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("ds")'>
+            <span>🎮 Nintendo DS</span>
+            <span class="toggle-icon">@GetIcon(_dsOpen)</span>
+        </div>
+        @if (_dsOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/game/dude?device=ds">Play DS</NavLink>
+            </div>
+        }
+    </div>
+
+    <!-- Mobile Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("mobile")'>
+            <span>📱 Mobile</span>
+            <span class="toggle-icon">@GetIcon(_mobileOpen)</span>
+        </div>
+        @if (_mobileOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/game/dude?device=mobile">Play Mobile</NavLink>
+            </div>
+        }
+    </div>
+
+    <!-- Computer Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("computer")'>
+            <span>💻 Computer</span>
+            <span class="toggle-icon">@GetIcon(_computerOpen)</span>
+        </div>
+        @if (_computerOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/game/dude?device=computer">Play Computer</NavLink>
+            </div>
+        }
+    </div>
+
+    
+
+    <!-- GameBoy 3 Section (New) -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("gameboy3")'>
+            <span>🎮 GameBoy 3</span>
+            <span class="toggle-icon">@GetIcon(_gameboy3Open)</span>
+        </div>
+        @if (_gameboy3Open)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/gameboy3/play">Play GameBoy 3</NavLink>
+            </div>
+        }
+    </div>
+
+   
+  
+
+    <!-- PC Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("pc")'>
+            <span>💻 PC (Custom)</span>
+            <span class="toggle-icon">@GetIcon(_pcOpen)</span>
+        </div>
+        @if (_pcOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/pc/play">Play PC</NavLink>
+            </div>
+        }
+    </div>
+
+    <!-- Nintendo DS2 Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("nds2")'>
+            <span>🎮 Nintendo DS2</span>
+            <span class="toggle-icon">@GetIcon(_nds2Open)</span>
+        </div>
+        @if (_nds2Open)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/nds2/play">Play DS2</NavLink>
+            </div>
+        }
+    </div>
+
+    <!-- Nintendo DS3 Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("ds3")'>
+            <span>🎮 Nintendo DS3</span>
+            <span class="toggle-icon">@GetIcon(_ds3Open)</span>
+        </div>
+        @if (_ds3Open)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/ds3/play">Play DS3</NavLink>
+            </div>
+        }
+    </div>
+
+    <!-- JSON Service Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("jsonService")'>
+            <span>📄 JSON Game Generator</span>
+            <span class="toggle-icon">@GetIcon(_jsonServiceOpen)</span>
+        </div>
+        @if (_jsonServiceOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/json-service">Create Game</NavLink>
+            </div>
+        }
+    </div>
+
+    <!-- Trippy Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("trippy")'>
+            <span>🌀 Trippy C# Playground</span>
+            <span class="toggle-icon">@GetIcon(_trippyOpen)</span>
+        </div>
+        @if (_trippyOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/trippy/play">Play</NavLink>
+            </div>
+        }
+    </div>
+
+    <!-- TV Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("tv")'>
+            <span>📺 Big Screen TV</span>
+            <span class="toggle-icon">@GetIcon(_tvOpen)</span>
+        </div>
+        @if (_tvOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/tv/play">Watch TV</NavLink>
+            </div>
+        }
+    </div>
+
+   
+
+    <!-- Chaos Test Section -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("chaosTest")'>
+            <span>🌀 Chaos Test</span>
+            <span class="toggle-icon">@GetIcon(_chaosTestOpen)</span>
+        </div>
+        @if (_chaosTestOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/chaos-test">Launch Test</NavLink>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private bool _dsOpen = false;
+    private bool _mobileOpen = false;
+    private bool _computerOpen = false;
+    private bool _gbOpen = false;
+    private bool _gameboy3Open = false; // New
+    private bool _atariOpen = false;
+    private bool _pspOpen = false;
+    private bool _pcOpen = false;
+    private bool _nds2Open = false;
+    private bool _ds3Open = false;
+    private bool _jsonServiceOpen = false;
+    private bool _trippyOpen = false;
+    private bool _tvOpen = false;
+    private bool _gb2Open = false;
+    private bool _chaosTestOpen = false;
+
+    private void ToggleSection(string section)
+    {
+        switch (section)
+        {
+            case "ds": _dsOpen = !_dsOpen; break;
+            case "mobile": _mobileOpen = !_mobileOpen; break;
+            case "computer": _computerOpen = !_computerOpen; break;
+            
+            case "gameboy3": _gameboy3Open = !_gameboy3Open; break; // New
+           
+            case "pc": _pcOpen = !_pcOpen; break;
+            case "nds2": _nds2Open = !_nds2Open; break;
+            case "ds3": _ds3Open = !_ds3Open; break;
+            case "jsonService": _jsonServiceOpen = !_jsonServiceOpen; break;
+            case "trippy": _trippyOpen = !_trippyOpen; break;
+            case "tv": _tvOpen = !_tvOpen; break;
+           
+            case "chaosTest": _chaosTestOpen = !_chaosTestOpen; break;
+        }
+    }
+}

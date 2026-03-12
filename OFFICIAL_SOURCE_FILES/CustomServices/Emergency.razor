@@ -1,0 +1,51 @@
+@page "/emergency"
+@namespace MiniGames.CustomServices
+@using MiniGames.CustomServices.Services
+@inject IEmergencyService EmergencyService
+@inject NavigationManager Navigation
+
+<PageTitle>Emergency Support</PageTitle>
+
+<div class="emergency-container">
+    <div class="emergency-header">
+        <h1>🚨 Emergency Support</h1>
+        <p>If you're experiencing a critical issue that prevents normal operation, use these resources immediately.</p>
+    </div>
+
+    <div class="emergency-contacts">
+        @foreach (var contact in EmergencyService.GetContacts())
+        {
+            <div class="contact-card">
+                <h3>@contact.Title</h3>
+                <p class="contact-description">@contact.Description</p>
+                <div class="contact-details">
+                    @if (!string.IsNullOrEmpty(contact.Phone))
+                    {
+                        <p><strong>Phone:</strong> <a href="tel:@contact.Phone">@contact.Phone</a></p>
+                    }
+                    @if (!string.IsNullOrEmpty(contact.Email))
+                    {
+                        <p><strong>Email:</strong> <a href="mailto:@contact.Email">@contact.Email</a></p>
+                    }
+                    @if (!string.IsNullOrEmpty(contact.Url))
+                    {
+                        <p><strong>Web:</strong> <a href="@contact.Url" target="_blank">@contact.LinkText</a></p>
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(contact.ChatUrl))
+                {
+                    <a href="@contact.ChatUrl" class="chat-button" target="_blank">💬 Live Chat</a>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="emergency-footer">
+        <button class="back-home" @onclick="GoHome">← Return Home</button>
+        <p class="emergency-note">For non‑urgent issues, please use the <a href="/help">Help Center</a> or <a href="/error">Report an Error</a>.</p>
+    </div>
+</div>
+
+@code {
+    private void GoHome() => Navigation.NavigateTo("/");
+}

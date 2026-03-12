@@ -1,0 +1,84 @@
+@inject ChaosService Chaos
+@inject IJSRuntime JS
+
+<div class="mobile-emulator @(Chaos.GetRandomThemeClass())">
+    <div class="mobile-screen">
+        @if (Chaos.ShouldSimulateError())
+        {
+            <div class="simulated-error">
+                <strong>⚠️ ANDROID SYSTEM UI</strong>
+                <p>Unfortunately, the process com.android.systemui has stopped.</p>
+                <button @onclick="ReloadGame">OK</button>
+            </div>
+        }
+        else
+        {
+            <iframe src="@GameUrl" @ref="iframe" class="mobile-game-frame"></iframe>
+        }
+    </div>
+    <div class="mobile-controls">
+        <div class="status-bar">
+            <span>📶 4G 🔋 87%</span>
+        </div>
+        <div class="touch-area" 
+             @ontouchstart:preventDefault="true" 
+             @ontouchstart="HandleTouchStart"
+             @ontouchmove:preventDefault="true"
+             @ontouchmove="HandleTouchMove"
+             @ontouchend:preventDefault="true"
+             @ontouchend="HandleTouchEnd">
+            <div class="touch-overlay">Tap or swipe</div>
+        </div>
+        <div class="bottom-buttons">
+            <button class="home-btn" 
+                    @onmousedown:preventDefault="true" 
+                    @onclick="() => SendHome()">🏠</button>
+            <button class="back-btn" 
+                    @onmousedown:preventDefault="true" 
+                    @onclick="() => SendBack()">←</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string GameUrl { get; set; } = "";
+    private ElementReference iframe;
+
+    private async Task HandleTouchStart(TouchEventArgs e)
+    {
+        if (e.Touches.Length > 0)
+        {
+            var touch = e.Touches[0];
+            await JS.InvokeVoidAsync("mobileEmulator.handleTouchStart", iframe, touch.ClientX, touch.ClientY, touch.Identifier);
+        }
+    }
+
+    private async Task HandleTouchMove(TouchEventArgs e)
+    {
+        if (e.Touches.Length > 0)
+        {
+            var touch = e.Touches[0];
+            await JS.InvokeVoidAsync("mobileEmulator.handleTouchMove", iframe, touch.ClientX, touch.ClientY, touch.Identifier);
+        }
+    }
+
+    private async Task HandleTouchEnd(TouchEventArgs e)
+    {
+        await JS.InvokeVoidAsync("mobileEmulator.handleTouchEnd", iframe);
+    }
+
+    private async Task SendHome()
+    {
+        await JS.InvokeVoidAsync("mobileEmulator.sendHome", iframe);
+    }
+
+    private async Task SendBack()
+    {
+        await JS.InvokeVoidAsync("mobileEmulator.sendBack", iframe);
+    }
+
+    private void ReloadGame()
+    {
+        GameUrl = GameUrl + "?reload=" + Guid.NewGuid();
+    }
+}

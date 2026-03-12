@@ -1,0 +1,22 @@
+@namespace MiniGames.Shared
+@inject NavigationManager Navigation
+
+<div class="error-container critical">
+    <div class="error-screen">
+        <div class="error-glitch">
+            <div class="error-code">⚠️ SYSTEM FAILURE</div>
+            <div class="error-message">KERNEL PANIC</div>
+            <div class="error-details">@Exception?.Message</div>
+            <div class="error-suggestion">The emulator crashed. Press RESET to restart.</div>
+            <button class="error-home-btn" @onclick="Reset">🔄 RESET</button>
+        </div>
+        <div class="error-scanlines"></div>
+        <div class="error-static"></div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Exception? Exception { get; set; }
+
+    private void Reset() => Navigation.NavigateTo("/", true);
+}

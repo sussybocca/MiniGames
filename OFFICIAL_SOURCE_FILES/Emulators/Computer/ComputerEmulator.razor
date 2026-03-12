@@ -1,0 +1,38 @@
+@inject ChaosService Chaos
+@inject IJSRuntime JS
+
+<div class="computer-emulator @(Chaos.GetRandomThemeClass())">
+    <div class="computer-screen">
+        @if (Chaos.ShouldSimulateError())
+        {
+            <div class="simulated-error">
+                <strong>⚠️ WINDOWS BSOD</strong>
+                <p>:( Your PC ran into a problem and needs to restart.</p>
+                <button @onclick="ReloadGame">Restart</button>
+            </div>
+        }
+        else
+        {
+            <iframe src="@GameUrl" @ref="iframe" class="computer-game-frame"></iframe>
+        }
+    </div>
+    <div class="computer-controls">
+        <span class="keyboard-hint">Keyboard: Arrow keys / WASD</span>
+        <button class="ctrl-alt-del" @onclick="SimulateCtrlAltDel">Ctrl+Alt+Del</button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string GameUrl { get; set; } = "";
+    private ElementReference iframe;
+
+    private async Task SimulateCtrlAltDel()
+    {
+        await JS.InvokeVoidAsync("computerEmulator.ctrlAltDel", iframe);
+    }
+
+    private void ReloadGame()
+    {
+        GameUrl = GameUrl + "?reload=" + Guid.NewGuid();
+    }
+}

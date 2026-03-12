@@ -1,0 +1,80 @@
+@inject ChaosService Chaos
+
+<div class="device-container @DeviceClass @(Chaos.GetRandomThemeClass())">
+    <div class="device-screen">
+        @if (Chaos.ShouldSimulateError())
+        {
+            <div class="simulated-error">
+                <strong>⚠️ SERVER OVERLOAD</strong>
+                <p>Error 503: Service Unavailable (simulated)</p>
+                <button @onclick="ReloadGame">Retry</button>
+            </div>
+        }
+        else
+        {
+            <iframe src="@GameUrl"
+                    @attributes="InputAttributes"
+                    class="game-frame"></iframe>
+        }
+    </div>
+    <div class="device-controls">
+        @RenderControls()
+    </div>
+</div>
+
+@code {
+    [Parameter] public string GameUrl { get; set; } = "";
+    [Parameter] public string DeviceType { get; set; } = "ds"; // ds, mobile, computer
+
+    private string DeviceClass => $"device-{DeviceType}";
+    private Dictionary<string, object> InputAttributes = new();
+
+    protected override void OnInitialized()
+    {
+        // Attach JavaScript input bridge based on device type
+        InputAttributes = new Dictionary<string, object>
+        {
+            { "data-device", DeviceType },
+            { "onload", "connectEmulator(this)" } // JS function to set up input mapping
+        };
+    }
+
+    private RenderFragment RenderControls() => __builder =>
+    {
+        if (DeviceType == "ds")
+        {
+            <div class="ds-controls">
+                <button class="dpad-up" data-key="ArrowUp">↑</button>
+                <button class="dpad-down" data-key="ArrowDown">↓</button>
+                <button class="dpad-left" data-key="ArrowLeft">←</button>
+                <button class="dpad-right" data-key="ArrowRight">→</button>
+                <button class="btn-a" data-key="a">A</button>
+                <button class="btn-b" data-key="b">B</button>
+                <button class="btn-start">Start</button>
+                <button class="btn-select">Select</button>
+            </div>
+        }
+        else if (DeviceType == "mobile")
+        {
+            <div class="mobile-controls">
+                <div class="touch-area" @ontouchstart="SimulateTouch">Tap screen</div>
+                <button class="home-btn">Home</button>
+                <button class="back-btn">Back</button>
+            </div>
+        }
+        else // computer
+        {
+            <div class="computer-controls">
+                <span>Keyboard: WASD / Arrow keys</span>
+            </div>
+        }
+    };
+
+    private void ReloadGame()
+    {
+        // Force reload via iframe src change
+        GameUrl = GameUrl + "?reload=" + Guid.NewGuid();
+    }
+
+    private void SimulateTouch() { /* handled by JS */ }
+}

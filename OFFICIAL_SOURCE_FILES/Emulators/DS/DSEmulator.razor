@@ -1,0 +1,421 @@
+@namespace MiniGames.Emulators.DS
+@attribute [Route("/ds/play")]
+@using System.Threading
+@inject ChaosService Chaos
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="ds-emulator @(Chaos?.GetRandomThemeClass() ?? "")" @onclick="HandleScreenTap">
+    <div class="ds-shell @(_showShake ? "chaos-shake" : "") @(_showSpin ? "chaos-spin" : "")">
+        <!-- Top Screen -->
+        <div class="top-screen @(_showPixelate ? "chaos-pixelate" : "")">
+            <div class="screen-bezel @(_showWave ? "chaos-wave" : "") @(_showVHS ? "chaos-vhs" : "") @(_showLag ? "chaos-lag" : "")">
+                <div class="screen-glare"></div>
+                <div class="screen-content @(_showCorrupt ? "chaos-corrupt" : "")">
+                    @if (_showGlitch)
+                    {
+                        <div class="glitch-overlay"></div>
+                    }
+                    @if (_showStatic)
+                    {
+                        <div class="static-overlay"></div>
+                    }
+                    @if (_showColorShift)
+                    {
+                        <div class="color-shift"></div>
+                    }
+                    @if (Chaos?.ShouldSimulateError() == true || _forceError)
+                    {
+                        <div class="simulated-error">
+                            <strong>⚠️ @_errorTitle</strong>
+                            <p>@_errorMessage</p>
+                            <button @onclick="ReloadGame">Reset</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <iframe src="@GameUrl" @ref="iframe" class="game-frame"></iframe>
+                    }
+                </div>
+                <div class="scanlines"></div>
+                <div class="pixel-grid"></div>
+            </div>
+            <div class="top-detail">
+                <span class="nintendo-logo">Nintendo</span>
+                <span class="ds-logo">DS</span>
+                <div class="power-led @(_powerOn ? "on" : "off")"></div>
+            </div>
+        </div>
+
+        <!-- Hinge -->
+        <div class="hinge">
+            <div class="hinge-left"></div>
+            <div class="hinge-center"></div>
+            <div class="hinge-right"></div>
+        </div>
+
+        <!-- Bottom Unit -->
+        <div class="bottom-unit @(_showPixelate ? "chaos-pixelate" : "")">
+            <div class="bottom-screen-bezel @(_showWave ? "chaos-wave" : "") @(_showVHS ? "chaos-vhs" : "") @(_showLag ? "chaos-lag" : "")">
+                <div class="screen-glare"></div>
+                <div class="screen-content @(_showCorrupt ? "chaos-corrupt" : "")">
+                    @if (_showGlitch)
+                    {
+                        <div class="glitch-overlay"></div>
+                    }
+                    @if (_showStatic)
+                    {
+                        <div class="static-overlay"></div>
+                    }
+                    @if (_showColorShift)
+                    {
+                        <div class="color-shift"></div>
+                    }
+                    @if (_touchMode)
+                    {
+                        <div class="touch-overlay" @ontouchstart="HandleTouchStart" @ontouchmove="HandleTouchMove" @ontouchend="HandleTouchEnd"
+                             @onmousedown="HandleMouseDown" @onmousemove="HandleMouseMove" @onmouseup="HandleMouseUp">
+                            <div class="stylus-indicator" style="left: @_touchX%; top: @_touchY%;"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="touch-placeholder">Touch to enable stylus</div>
+                    }
+                </div>
+                <div class="scanlines"></div>
+                <div class="pixel-grid"></div>
+            </div>
+            <div class="stylus-slot">
+                <button class="stylus-toggle" @onclick="() => _touchMode = !_touchMode">
+                    @(_touchMode ? "Stylus Out" : "Stylus In")
+                </button>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-panel">
+                <div class="dpad">
+                    <button class="dpad-up" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("ArrowUp")' @onmouseup='() => SendKey("ArrowUp", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>↑</button>
+                    <button class="dpad-down" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("ArrowDown")' @onmouseup='() => SendKey("ArrowDown", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>↓</button>
+                    <button class="dpad-left" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("ArrowLeft")' @onmouseup='() => SendKey("ArrowLeft", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>←</button>
+                    <button class="dpad-right" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("ArrowRight")' @onmouseup='() => SendKey("ArrowRight", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>→</button>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn-a" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("a")' @onmouseup='() => SendKey("a", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>A</button>
+                    <button class="btn-b" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("b")' @onmouseup='() => SendKey("b", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>B</button>
+                    <button class="btn-x" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("x")' @onmouseup='() => SendKey("x", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>X</button>
+                    <button class="btn-y" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("y")' @onmouseup='() => SendKey("y", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>Y</button>
+                </div>
+                <div class="shoulder-buttons">
+                    <button class="btn-l" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("l")' @onmouseup='() => SendKey("l", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>L</button>
+                    <button class="btn-r" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("r")' @onmouseup='() => SendKey("r", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>R</button>
+                </div>
+                <div class="system-buttons">
+                    <button class="btn-start" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("Start")' @onmouseup='() => SendKey("Start", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>Start</button>
+                    <button class="btn-select" @onmousedown:preventDefault="true" @onmousedown='() => SendKey("Select")' @onmouseup='() => SendKey("Select", "up")' @onclick='() => Chaos?.LogRandomConsoleError(JS)'>Select</button>
+                </div>
+            </div>
+
+            <!-- Status Panel -->
+            <div class="status-panel">
+                <div class="power-led-small @(_powerOn ? "on" : "off")"></div>
+                <div class="fps-indicator">FPS: @(_showLag ? _lagFps : _fps)</div>
+                <div class="battery-indicator">🔋 @_battery%</div>
+                <div class="wifi-indicator">@_wifiSymbol</div>
+                <div class="volume-slider">
+                    <input type="range" min="0" max="100" value="@_volume" @onchange="(e) => _volume = int.Parse(e.Value.ToString())" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string GameUrl { get; set; } = "";
+    private ElementReference iframe;
+
+    // Touch simulation
+    private bool _touchMode = true;
+    private double _touchX = 50;
+    private double _touchY = 50;
+    private bool _isMouseDown = false;
+
+    // Chaos / Glitch states
+    private bool _showGlitch = false;
+    private bool _showStatic = false;
+    private bool _showColorShift = false;
+    private bool _showShake = false;
+    private bool _showSpin = false;
+    private bool _showPixelate = false;
+    private bool _showWave = false;
+    private bool _showVHS = false;
+    private bool _showCorrupt = false;
+    private bool _showLag = false;
+    private bool _forceError = false;
+    private string _errorTitle = "DS FIRMWARE ERROR";
+    private string _errorMessage = "Exception: 0xDEADBEEF";
+    private bool _powerOn = true;
+    private int _battery = 87;
+    private string _wifiSymbol = "📶";
+    private int _lagFps = 15;
+    private int _volume = 50;
+
+    // System error messages
+    private readonly string[] _systemErrors = new[]
+    {
+        "FATAL: ARM9 exception at 0x08000000",
+        "DS firmware corrupted – performing recovery...",
+        "WRAM: Data abort",
+        "FATAL: GPU hang detected",
+        "HARDWARE FAILURE: contact Nintendo support"
+    };
+
+    // Performance
+    private int _fps = 60;
+    private DateTime _lastFrame = DateTime.Now;
+    private System.Threading.Timer? _fpsTimer;
+    private System.Threading.Timer? _chaosTimer;
+
+    protected override void OnInitialized()
+    {
+        // FPS counter
+        _fpsTimer = new System.Threading.Timer(_ =>
+        {
+            var now = DateTime.Now;
+            var diff = (now - _lastFrame).TotalSeconds;
+            _lastFrame = now;
+            if (diff > 0)
+            {
+                _fps = (int)Math.Round(1.0 / diff);
+            }
+            InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
+
+        // Chaos timer
+        _chaosTimer = new System.Threading.Timer(async _ =>
+        {
+            if (Chaos?.IsChaosModeEnabled == true)
+            {
+                if (new Random().Next(3) == 0)
+                    Chaos.LogRandomConsoleError(JS);
+
+                var (effect, duration) = Chaos.GetRandomGlitchEffect();
+                if (!string.IsNullOrEmpty(effect))
+                    await InvokeAsync(() => ApplyGlitchEffect(effect, duration));
+
+                if (new Random().Next(10) == 0)
+                {
+                    _battery = Math.Max(0, _battery - 1);
+                    _wifiSymbol = new[] { "📶", "📶", "📶", "📡", "✗" }[new Random().Next(5)];
+                    StateHasChanged();
+                }
+            }
+        }, null, TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(4));
+    }
+
+    private void ApplyGlitchEffect(string effect, int durationMs)
+    {
+        var rand = new Random();
+        switch (effect)
+        {
+            case "glitch":
+                _showGlitch = true;
+                _ = Task.Delay(durationMs).ContinueWith(_ => InvokeAsync(() => _showGlitch = false));
+                break;
+            case "static":
+                _showStatic = true;
+                _ = Task.Delay(durationMs).ContinueWith(_ => InvokeAsync(() => _showStatic = false));
+                break;
+            case "colorShift":
+                _showColorShift = true;
+                _ = Task.Delay(durationMs).ContinueWith(_ => InvokeAsync(() => _showColorShift = false));
+                break;
+            case "flicker":
+                _powerOn = false;
+                _ = Task.Delay(durationMs).ContinueWith(_ => InvokeAsync(() => _powerOn = true));
+                break;
+            case "pixelate":
+                _showPixelate = true;
+                _ = Task.Delay(durationMs).ContinueWith(_ => InvokeAsync(() => _showPixelate = false));
+                break;
+            case "wave":
+                _showWave = true;
+                _ = Task.Delay(durationMs).ContinueWith(_ => InvokeAsync(() => _showWave = false));
+                break;
+            case "vhs":
+                _showVHS = true;
+                _ = Task.Delay(durationMs).ContinueWith(_ => InvokeAsync(() => _showVHS = false));
+                break;
+            case "corrupt":
+                _showCorrupt = true;
+                _forceError = true;
+                _errorMessage = _systemErrors[rand.Next(_systemErrors.Length)];
+                _errorTitle = "SYSTEM CORRUPTION";
+                _ = Task.Delay(durationMs).ContinueWith(_ => InvokeAsync(() => { _showCorrupt = false; _forceError = false; }));
+                break;
+            case "lag":
+                _showLag = true;
+                _ = Task.Delay(durationMs).ContinueWith(_ => InvokeAsync(() => _showLag = false));
+                break;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("eval", @"
+                window.dsEmulator = {
+                    sendKey: (iframe, key, action) => {
+                        const iframeWindow = iframe.contentWindow;
+                        if (!iframeWindow) return;
+                        iframe.focus();
+                        const keyMap = {
+                            'ArrowUp': { key: 'ArrowUp', code: 'ArrowUp', keyCode: 38 },
+                            'ArrowDown': { key: 'ArrowDown', code: 'ArrowDown', keyCode: 40 },
+                            'ArrowLeft': { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37 },
+                            'ArrowRight': { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39 },
+                            'a': { key: 'a', code: 'KeyA', keyCode: 65 },
+                            'b': { key: 'b', code: 'KeyB', keyCode: 66 },
+                            'x': { key: 'x', code: 'KeyX', keyCode: 88 },
+                            'y': { key: 'y', code: 'KeyY', keyCode: 89 },
+                            'l': { key: 'l', code: 'KeyL', keyCode: 76 },
+                            'r': { key: 'r', code: 'KeyR', keyCode: 82 },
+                            'Start': { key: 'Enter', code: 'Enter', keyCode: 13 },
+                            'Select': { key: ' ', code: 'Space', keyCode: 32 }
+                        };
+                        const props = keyMap[key] || { key: key, code: key, keyCode: key.charCodeAt(0) };
+                        const eventType = action === 'down' ? 'keydown' : 'keyup';
+                        const event = new KeyboardEvent(eventType, {
+                            key: props.key,
+                            code: props.code,
+                            keyCode: props.keyCode,
+                            which: props.keyCode,
+                            bubbles: true,
+                            cancelable: true,
+                            composed: true
+                        });
+                        iframeWindow.dispatchEvent(event);
+                        iframeWindow.document.activeElement?.dispatchEvent(event);
+                    },
+                    sendTouch: (iframe, x, y, type) => {
+                        const iframeWindow = iframe.contentWindow;
+                        if (!iframeWindow) return;
+                        iframe.focus();
+                        const touch = new Touch({
+                            identifier: Date.now(),
+                            target: iframeWindow.document.body,
+                            clientX: x,
+                            clientY: y,
+                            radiusX: 2.5,
+                            radiusY: 2.5,
+                            rotationAngle: 0,
+                            force: 1
+                        });
+                        const touchEvent = new TouchEvent('touch' + type, {
+                            touches: [touch],
+                            targetTouches: [touch],
+                            changedTouches: [touch],
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        iframeWindow.dispatchEvent(touchEvent);
+                        iframeWindow.document.body.dispatchEvent(touchEvent);
+                    }
+                };
+            ");
+        }
+    }
+
+    private async Task SendKey(string key, string action = "down")
+    {
+        if (JS != null)
+            await JS.InvokeVoidAsync("dsEmulator.sendKey", iframe, key, action);
+    }
+
+    private async Task HandleTouchStart(TouchEventArgs e)
+    {
+        if (e.Touches.Length > 0)
+        {
+            var rect = await JS.InvokeAsync<DomRect>("getElementRect", iframe);
+            double absX = e.Touches[0].ClientX - rect.Left;
+            double absY = e.Touches[0].ClientY - rect.Top;
+            _touchX = (absX / rect.Width) * 100;
+            _touchY = (absY / rect.Height) * 100;
+            await JS.InvokeVoidAsync("dsEmulator.sendTouch", iframe, absX, absY, "start");
+        }
+    }
+
+    private async Task HandleTouchMove(TouchEventArgs e)
+    {
+        if (e.Touches.Length > 0)
+        {
+            var rect = await JS.InvokeAsync<DomRect>("getElementRect", iframe);
+            double absX = e.Touches[0].ClientX - rect.Left;
+            double absY = e.Touches[0].ClientY - rect.Top;
+            _touchX = (absX / rect.Width) * 100;
+            _touchY = (absY / rect.Height) * 100;
+            await JS.InvokeVoidAsync("dsEmulator.sendTouch", iframe, absX, absY, "move");
+        }
+    }
+
+    private async Task HandleTouchEnd(TouchEventArgs e)
+    {
+        await JS.InvokeVoidAsync("dsEmulator.sendTouch", iframe, 0, 0, "end");
+    }
+
+    private async Task HandleMouseDown(MouseEventArgs e)
+    {
+        _isMouseDown = true;
+        var rect = await JS.InvokeAsync<DomRect>("getElementRect", iframe);
+        double absX = e.ClientX - rect.Left;
+        double absY = e.ClientY - rect.Top;
+        _touchX = (absX / rect.Width) * 100;
+        _touchY = (absY / rect.Height) * 100;
+        await JS.InvokeVoidAsync("dsEmulator.sendTouch", iframe, absX, absY, "start");
+    }
+
+    private async Task HandleMouseMove(MouseEventArgs e)
+    {
+        if (_isMouseDown)
+        {
+            var rect = await JS.InvokeAsync<DomRect>("getElementRect", iframe);
+            double absX = e.ClientX - rect.Left;
+            double absY = e.ClientY - rect.Top;
+            _touchX = (absX / rect.Width) * 100;
+            _touchY = (absY / rect.Height) * 100;
+            await JS.InvokeVoidAsync("dsEmulator.sendTouch", iframe, absX, absY, "move");
+        }
+    }
+
+    private async Task HandleMouseUp(MouseEventArgs e)
+    {
+        _isMouseDown = false;
+        await JS.InvokeVoidAsync("dsEmulator.sendTouch", iframe, 0, 0, "end");
+    }
+
+    private void HandleScreenTap()
+    {
+        if (JS != null)
+            JS.InvokeVoidAsync("dsEmulator.focus", iframe);
+    }
+
+    private void ReloadGame()
+    {
+        GameUrl = GameUrl + "?reload=" + Guid.NewGuid();
+    }
+
+    public void Dispose()
+    {
+        _fpsTimer?.Dispose();
+        _chaosTimer?.Dispose();
+    }
+
+    private class DomRect
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
+}

@@ -1,0 +1,199 @@
+@page "/gameboy3/play"
+@page "/gameboy3/play/{gamePath?}"
+@namespace MiniGames.Emulators.GameBoy3
+@using coreboy
+@using coreboy.memory.cart
+@using coreboy.memory.cart.battery
+@using coreboy.gpu
+@using coreboy.sound
+@using coreboy.serial
+@using coreboy.controller
+@using System.Threading.Tasks
+@inject GameService GameService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject HttpClient Http
+
+<div class="gb3-console">
+    <div class="gb3-shell">
+        <div class="screen-bezel">
+            <canvas @ref="_canvas" class="game-canvas" width="160" height="144"></canvas>
+            <div class="scanlines"></div>
+        </div>
+        <div class="controls">
+            <div class="dpad">
+                <button class="dpad-up" @onmousedown='() => SendKey("up", true)' @onmouseup='() => SendKey("up", false)'>↑</button>
+                <button class="dpad-down" @onmousedown='() => SendKey("down", true)' @onmouseup='() => SendKey("down", false)'>↓</button>
+                <button class="dpad-left" @onmousedown='() => SendKey("left", true)' @onmouseup='() => SendKey("left", false)'>←</button>
+                <button class="dpad-right" @onmousedown='() => SendKey("right", true)' @onmouseup='() => SendKey("right", false)'>→</button>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-a" @onmousedown='() => SendKey("a", true)' @onmouseup='() => SendKey("a", false)'>A</button>
+                <button class="btn-b" @onmousedown='() => SendKey("b", true)' @onmouseup='() => SendKey("b", false)'>B</button>
+                <button class="btn-select" @onmousedown='() => SendKey("select", true)' @onmouseup='() => SendKey("select", false)'>Select</button>
+                <button class="btn-start" @onmousedown='() => SendKey("start", true)' @onmouseup='() => SendKey("start", false)'>Start</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? gamePath { get; set; }
+
+    private ElementReference _canvas;
+    private Gameboy? _gameboy;
+    private CancellationTokenSource? _cts;
+    private bool _running;
+    private string? _statusMessage;
+    private BlazorDisplay _display = new();
+    private TaskCompletionSource<byte[]>? _frameTcs;
+
+    private class BlazorDisplay : IDisplay
+    {
+        private readonly int[] _frameBuffer = new int[160 * 144];
+        private readonly object _lock = new();
+        private int _pixelIndex = 0;
+        private bool _enabled = true;
+        private byte[]? _lastFrameData;
+
+        public bool Enabled
+        {
+            get => _enabled;
+            set => _enabled = value;
+        }
+
+        public event FrameProducedEventHandler? OnFrameProduced;
+
+        public void Run(CancellationToken token) { } // Not used
+
+        public void PutDmgPixel(int color)
+        {
+            lock (_lock)
+            {
+                if (_pixelIndex < _frameBuffer.Length)
+                    _frameBuffer[_pixelIndex++] = color;
+            }
+        }
+
+        public void PutColorPixel(int color)
+        {
+            lock (_lock)
+            {
+                if (_pixelIndex < _frameBuffer.Length)
+                    _frameBuffer[_pixelIndex++] = color;
+            }
+        }
+
+        public void RequestRefresh()
+        {
+            lock (_lock)
+            {
+                byte[] rgba = new byte[_frameBuffer.Length * 4];
+                for (int i = 0; i < _frameBuffer.Length; i++)
+                {
+                    int argb = _frameBuffer[i];
+                    rgba[i * 4] = (byte)((argb >> 16) & 0xFF);
+                    rgba[i * 4 + 1] = (byte)((argb >> 8) & 0xFF);
+                    rgba[i * 4 + 2] = (byte)(argb & 0xFF);
+                    rgba[i * 4 + 3] = (byte)((argb >> 24) & 0xFF);
+                }
+                _lastFrameData = rgba;
+                _pixelIndex = 0;
+            }
+            OnFrameProduced?.Invoke(this, _lastFrameData ?? Array.Empty<byte>());
+        }
+
+        public void WaitForRefresh() { }
+
+        public byte[]? GetLastFrameData()
+        {
+            lock (_lock) { return _lastFrameData; }
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(gamePath))
+        {
+            _statusMessage = "No game selected.";
+            return;
+        }
+
+        var games = await GameService.GetGamesAsync();
+        var game = games.FirstOrDefault(g => g.Folder.Equals(gamePath, StringComparison.OrdinalIgnoreCase));
+        if (game == null)
+        {
+            _statusMessage = "Game not found.";
+            return;
+        }
+
+        try
+        {
+            // If the path is a virtual path (e.g., in Blazor Server), you may need to map to physical.
+            // For now, assume it's a physical file path.
+            StartEmulator(game.GamePath);
+        }
+        catch (Exception ex)
+        {
+            _statusMessage = $"Failed to load ROM: {ex.Message}";
+        }
+    }
+
+    private void StartEmulator(string romPath)
+    {
+        // Create options and set the ROM file path
+        var options = new GameboyOptions { Rom = romPath };
+        var cartridge = new Cartridge(options);
+        var controller = new NullController();
+        var soundOutput = new NullSoundOutput();
+        var serialEndpoint = new NullSerialEndpoint();
+
+        _gameboy = new Gameboy(options, cartridge, _display, controller, soundOutput, serialEndpoint);
+
+        _cts = new CancellationTokenSource();
+        _running = true;
+
+        _display.OnFrameProduced += OnFrameProduced;
+
+        // Start emulation on a background thread
+        _ = Task.Run(() => _gameboy.Run(_cts.Token), _cts.Token);
+
+        // Start rendering loop on UI thread
+        _ = RenderLoop(_cts.Token);
+    }
+
+    private void OnFrameProduced(object sender, byte[] frameData)
+    {
+        _frameTcs?.TrySetResult(frameData);
+    }
+
+    private async Task RenderLoop(CancellationToken token)
+    {
+        while (!token.IsCancellationRequested && _running)
+        {
+            _frameTcs = new TaskCompletionSource<byte[]>();
+            var frameData = await _frameTcs.Task;
+            await RenderFrame(frameData);
+            await Task.Delay(16, token); // ~60 fps throttle
+        }
+    }
+
+    private async Task RenderFrame(byte[] rgba)
+    {
+        await JS.InvokeVoidAsync("gameboy3.render", _canvas, rgba);
+    }
+
+    private void SendKey(string key, bool pressed)
+    {
+        // TODO: Implement input forwarding to the emulator.
+        // This will require a custom IController implementation.
+        Console.WriteLine($"Key {key} {pressed}");
+    }
+
+    public void Dispose()
+    {
+        _running = false;
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

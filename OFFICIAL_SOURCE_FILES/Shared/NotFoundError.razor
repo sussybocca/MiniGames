@@ -1,0 +1,125 @@
+@namespace MiniGames.Shared
+@inject NavigationManager Navigation
+
+<div class="error-container not-found">
+    <div class="error-screen">
+        <div class="error-glitch" @onclick="GoHome">
+            <div class="error-code">404</div>
+            <div class="error-message">GAME CARTRIDGE NOT FOUND</div>
+            <div class="error-details">The page you're looking for has been misplaced.</div>
+            <div class="error-suggestion">Try inserting a different cartridge or check the title ID.</div>
+            <button class="error-home-btn" @onclick="GoHome">🔌 POWER BUTTON</button>
+        </div>
+        <div class="error-scanlines"></div>
+        <div class="error-static"></div>
+    </div>
+</div>
+
+@code {
+    private void GoHome() => Navigation.NavigateTo("/");
+}
+
+<style>
+    .error-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #0a0a0a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Courier New', monospace;
+        z-index: 9999;
+    }
+    .error-screen {
+        background: #1a1a2e;
+        padding: 3rem;
+        border-radius: 20px;
+        border: 4px solid #4a4a6a;
+        box-shadow: 0 0 30px #00f, inset 0 0 20px #00f;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        animation: errorPulse 2s infinite;
+    }
+    .error-glitch {
+        color: #0ff;
+        text-shadow: 2px 2px 0 #f0f, -2px -2px 0 #ff0;
+        animation: glitch 3s infinite;
+        cursor: pointer;
+    }
+    .error-code {
+        font-size: 6rem;
+        font-weight: bold;
+        line-height: 1;
+    }
+    .error-message {
+        font-size: 2rem;
+        margin: 1rem 0;
+        color: #f0f;
+        text-transform: uppercase;
+    }
+    .error-details, .error-suggestion {
+        font-size: 1.2rem;
+        color: #8ff;
+        margin: 0.5rem 0;
+    }
+    .error-home-btn {
+        margin-top: 2rem;
+        padding: 1rem 2rem;
+        background: #2a2a4a;
+        border: 2px solid #0ff;
+        color: #0ff;
+        font-size: 1.5rem;
+        font-family: inherit;
+        cursor: pointer;
+        border-radius: 10px;
+        box-shadow: 0 0 15px #0ff;
+        transition: all 0.2s;
+    }
+    .error-home-btn:hover {
+        background: #0ff;
+        color: #000;
+        box-shadow: 0 0 30px #0ff;
+    }
+    .error-scanlines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: repeating-linear-gradient(0deg, rgba(0,255,255,0.1) 0px, transparent 2px);
+        pointer-events: none;
+        animation: scanline 10s linear infinite;
+    }
+    .error-static {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.1"/></svg>');
+        pointer-events: none;
+        opacity: 0.3;
+        mix-blend-mode: screen;
+    }
+    @@keyframes errorPulse {
+        0% { box-shadow: 0 0 30px #0ff, inset 0 0 20px #0ff; }
+        50% { box-shadow: 0 0 50px #f0f, inset 0 0 30px #f0f; }
+        100% { box-shadow: 0 0 30px #0ff, inset 0 0 20px #0ff; }
+    }
+    @@keyframes glitch {
+        0% { transform: translate(0); }
+        20% { transform: translate(-2px, 2px); }
+        40% { transform: translate(2px, -2px); }
+        60% { transform: translate(-2px, -2px); }
+        80% { transform: translate(2px, 2px); }
+        100% { transform: translate(0); }
+    }
+    @@keyframes scanline {
+        0% { transform: translateY(-100%); }
+        100% { transform: translateY(100%); }
+    }
+</style>

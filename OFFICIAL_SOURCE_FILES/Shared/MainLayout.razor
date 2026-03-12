@@ -1,0 +1,109 @@
+@inherits LayoutComponentBase
+@inject ChaosService Chaos
+@inject RouteChaosService ChaosRoute
+@inject NavigationManager Navigation
+@inject GameService GameService
+
+<div class="layout">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar px-4">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+            <label class="chaos-toggle">
+                <input type="checkbox" @onchange="OnChaosToggled" checked="@Chaos.IsChaosModeEnabled" />
+                Chaos Mode
+            </label>
+            @if (ChaosRoute.IsChaosActive)
+            {
+                <span class="chaos-timer">⏳ @ChaosRoute.TimeLeft s</span>
+            }
+        </div>
+
+        <div class="content-container px-4">
+            @Body
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<string>? _allRealPaths;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var games = await GameService.GetGamesAsync();
+        var gameFolders = games.Select(g => g.Folder).ToList();
+
+        // All real paths (must start with "/")
+        _allRealPaths = new List<string> { "/", "/about" };
+
+        // Add game routes
+        foreach (var folder in gameFolders)
+        {
+            _allRealPaths.Add($"/game/{folder}");
+        }
+
+        // Add emulator routes
+        var emulatorRoutes = new[]
+        {
+            "/gameboy/stable", "/gameboy/beta", "/gameboy/unstable",
+            "/atari/stable", "/atari/beta", "/atari/unstable",
+            "/psp/stable", "/psp/beta", "/psp/unstable",
+            "/pc/play", "/nds2/play", "/ds/play"
+        };
+        _allRealPaths.AddRange(emulatorRoutes);
+
+        ChaosRoute.InitializeRealPaths(_allRealPaths);
+    }
+
+    private void OnChaosToggled(ChangeEventArgs e)
+    {
+        var isChecked = e.Value is bool b && b;
+        Chaos.IsChaosModeEnabled = isChecked;
+
+        if (isChecked)
+        {
+            if (!ChaosRoute.IsChaosActive)
+            {
+                ChaosRoute.StartChaos();
+                NavigateToFakeForCurrentPage();
+            }
+        }
+        else
+        {
+            if (ChaosRoute.IsChaosActive)
+            {
+                ChaosRoute.StopChaos();
+                NavigateToRealForCurrentPage();
+            }
+        }
+    }
+
+    private void NavigateToFakeForCurrentPage()
+    {
+        var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
+        // Ensure leading slash
+        var currentPath = string.IsNullOrEmpty(relativePath) ? "/" : "/" + relativePath;
+
+        var fakePath = ChaosRoute.GetFakePath(currentPath);
+        if (fakePath != currentPath)
+        {
+            // Force full page load to ensure catch‑all router picks it up
+            Navigation.NavigateTo(fakePath, forceLoad: true);
+        }
+    }
+
+    private void NavigateToRealForCurrentPage()
+    {
+        var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var currentPath = string.IsNullOrEmpty(relativePath) ? "/" : "/" + relativePath;
+
+        var realPath = ChaosRoute.GetRealPath(currentPath);
+        if (realPath != null && realPath != currentPath)
+        {
+            Navigation.NavigateTo(realPath, forceLoad: true);
+        }
+    }
+}

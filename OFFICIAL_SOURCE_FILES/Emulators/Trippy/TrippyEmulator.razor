@@ -1,0 +1,258 @@
+@page "/trippy/play"
+@using System.Reflection
+@using Microsoft.AspNetCore.Components.Web
+@using MiniGames.Dynamic
+@inject TrippyCompilerService Compiler
+@inject TrippyService Trippy
+@inject IJSRuntime JS
+
+<div class="trippy-emulator @(Trippy.GetTrippyClass()) @(_fullscreen ? "fullscreen" : "")">
+    <div class="trippy-header">
+        <h2>🌀 Trippy App Lab</h2>
+        <div class="header-controls">
+            <button class="fullscreen-btn" @onclick="ToggleFullscreen">⛶</button>
+        </div>
+    </div>
+
+    <div class="main-panel">
+        <div class="editor-panel">
+            <div class="panel-header">C# Code</div>
+            <textarea @bind="SourceCode" class="code-editor" spellcheck="false"></textarea>
+            <div class="editor-actions">
+                <button class="compile-btn" @onclick="CompileAndRun">▶ Compile & Run</button>
+                <button class="reset-btn" @onclick="ResetCode">↺ Reset</button>
+            </div>
+        </div>
+
+        <div class="output-panel">
+            <div class="panel-header">App Preview</div>
+            <div class="output-content">
+                @if (_isCompiling)
+                {
+                    <div class="compiling-spinner">🌀 Compiling...</div>
+                }
+                else if (_compilationError)
+                {
+                    <pre class="error-output">@_output</pre>
+                }
+                else if (_appInstance != null)
+                {
+                    <canvas id="trippy-canvas" width="600" height="400"
+                            @ref="canvas"
+                            @onmousedown="OnCanvasMouseDown"
+                            @onmousemove="OnCanvasMouseMove"
+                            @onmouseup="OnCanvasMouseUp"></canvas>
+                }
+                else
+                {
+                    <div class="placeholder">Write C# code and click Compile</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    // ----- CanvasProxy implements ICanvas from MiniGames.Dynamic -----
+    public class CanvasProxy : ICanvas
+    {
+        private readonly ElementReference _canvas;
+        private readonly IJSRuntime _js;
+
+        public CanvasProxy(ElementReference canvas, IJSRuntime js)
+        {
+            _canvas = canvas;
+            _js = js;
+        }
+
+        public void Clear()
+        {
+            _js.InvokeVoidAsync("eval", $@"
+                const canvas = document.querySelector('[_bl_{_canvas.Id}]');
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ");
+        }
+
+        public void FillRect(int x, int y, int w, int h, string color)
+        {
+            _js.InvokeVoidAsync("eval", $@"
+                const canvas = document.querySelector('[_bl_{_canvas.Id}]');
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '{color}';
+                ctx.fillRect({x}, {y}, {w}, {h});
+            ");
+        }
+
+        public void DrawText(string text, int x, int y)
+        {
+            string safeText = text.Replace("'", "\\'");
+            _js.InvokeVoidAsync("eval", $@"
+                const canvas = document.querySelector('[_bl_{_canvas.Id}]');
+                const ctx = canvas.getContext('2d');
+                ctx.font = '16px Arial';
+                ctx.fillStyle = 'white';
+                ctx.fillText('{safeText}', {x}, {y});
+            ");
+        }
+    }
+
+    // ----- Fields -----
+    private string SourceCode = @"using System;
+using MiniGames.Dynamic;
+
+public class MyApp : AppBase
+{
+    private int _x = 50;
+    private int _y = 50;
+    private bool _dragging = false;
+
+    public override void Draw(ICanvas canvas)
+    {
+        canvas.Clear();
+        canvas.FillRect(10, 10, 100, 100, ""red"");
+        canvas.FillRect(_x, _y, 30, 30, ""blue"");
+        canvas.DrawText(""Click and drag the blue square"", 10, 150);
+    }
+
+    public override void OnMouseDown(int x, int y)
+    {
+        if (x >= _x && x <= _x + 30 && y >= _y && y <= _y + 30)
+        {
+            _dragging = true;
+        }
+    }
+
+    public override void OnMouseMove(int x, int y)
+    {
+        if (_dragging)
+        {
+            _x = x - 15;
+            _y = y - 15;
+        }
+    }
+
+    public override void OnMouseUp(int x, int y)
+    {
+        _dragging = false;
+    }
+}";
+    private string? _output;
+    private Assembly? _compiledAssembly;
+    private object? _appInstance;
+    private Type? _appType;
+    private bool _isCompiling;
+    private bool _compilationError;
+    private bool _fullscreen;
+    private ElementReference canvas;
+    private CanvasProxy? _canvasProxy;
+
+    // ----- Methods -----
+    private async Task CompileAndRun()
+    {
+        _isCompiling = true;
+        _compilationError = false;
+        StateHasChanged();
+
+        string fullCode = SourceCode;
+
+        _compiledAssembly = await Compiler.CompileToAssembly(fullCode);
+
+        if (_compiledAssembly == null)
+        {
+            _output = "Compilation failed. Check browser console.";
+            _compilationError = true;
+            _isCompiling = false;
+            return;
+        }
+
+        _appType = _compiledAssembly.GetTypes().FirstOrDefault(t => t.IsSubclassOf(typeof(AppBase)));
+        if (_appType == null)
+        {
+            _output = "No class found that inherits from AppBase.";
+            _compilationError = true;
+            _isCompiling = false;
+            return;
+        }
+
+        try
+        {
+            _appInstance = Activator.CreateInstance(_appType);
+            _output = null;
+            await DrawCanvas();
+        }
+        catch (Exception ex)
+        {
+            _output = $"Error creating instance: {ex.Message}";
+            _compilationError = true;
+        }
+
+        _isCompiling = false;
+        StateHasChanged();
+    }
+
+    private void ResetCode()
+    {
+        SourceCode = @"using System;
+using MiniGames.Dynamic;
+
+public class MyApp : AppBase
+{
+    public override void Draw(ICanvas canvas)
+    {
+        canvas.Clear();
+        canvas.FillRect(10, 10, 100, 100, ""red"");
+        canvas.DrawText(""Hello from C#!"", 10, 150);
+    }
+}";
+        _appInstance = null;
+        _compilationError = false;
+    }
+
+    private void ToggleFullscreen() => _fullscreen = !_fullscreen;
+
+    private async Task OnCanvasMouseDown(MouseEventArgs e)
+    {
+        if (_appInstance == null) return;
+        var rect = await JS.InvokeAsync<DomRect>("getElementRect", canvas);
+        int x = (int)(e.ClientX - rect.Left);
+        int y = (int)(e.ClientY - rect.Top);
+        _appType?.GetMethod("OnMouseDown")?.Invoke(_appInstance, new object[] { x, y });
+        await DrawCanvas();
+    }
+
+    private async Task OnCanvasMouseMove(MouseEventArgs e)
+    {
+        if (_appInstance == null) return;
+        var rect = await JS.InvokeAsync<DomRect>("getElementRect", canvas);
+        int x = (int)(e.ClientX - rect.Left);
+        int y = (int)(e.ClientY - rect.Top);
+        _appType?.GetMethod("OnMouseMove")?.Invoke(_appInstance, new object[] { x, y });
+        await DrawCanvas();
+    }
+
+    private async Task OnCanvasMouseUp(MouseEventArgs e)
+    {
+        if (_appInstance == null) return;
+        var rect = await JS.InvokeAsync<DomRect>("getElementRect", canvas);
+        int x = (int)(e.ClientX - rect.Left);
+        int y = (int)(e.ClientY - rect.Top);
+        _appType?.GetMethod("OnMouseUp")?.Invoke(_appInstance, new object[] { x, y });
+        await DrawCanvas();
+    }
+
+    private async Task DrawCanvas()
+    {
+        if (_appInstance == null) return;
+        _canvasProxy ??= new CanvasProxy(canvas, JS);
+        _appType?.GetMethod("Draw")?.Invoke(_appInstance, new object[] { _canvasProxy });
+    }
+
+    private class DomRect
+    {
+        public double Left { get; set; }
+        public double Top { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+    }
+}

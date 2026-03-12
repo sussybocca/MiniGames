@@ -1,0 +1,38 @@
+@page "/help"
+@namespace MiniGames.CustomServices
+@inject IHelpService HelpService
+@inject NavigationManager Navigation
+
+<PageTitle>Help Center</PageTitle>
+
+<div class="help-container">
+    <h1>📚 Help Center</h1>
+    <p>Find answers to common questions and learn how to get the most out of your emulator.</p>
+
+    <div class="faq-section">
+        <h2>Frequently Asked Questions</h2>
+        @foreach (var item in HelpService.GetFAQs())
+        {
+            <details class="faq-item">
+                <summary>@item.Question</summary>
+                <div class="faq-answer">@item.Answer</div>
+            </details>
+        }
+    </div>
+
+    <div class="contact-support">
+        <h2>Still need help?</h2>
+        <p>If you couldn't find an answer, you can:</p>
+        <ul>
+            <li><a href="/guide">Read the detailed user guide</a></li>
+            <li><a href="/error">Report an error</a></li>
+            <li><a href="/emergency">Contact emergency support</a></li>
+        </ul>
+    </div>
+
+    <button class="back-home" @onclick="GoHome">← Return Home</button>
+</div>
+
+@code {
+    private void GoHome() => Navigation.NavigateTo("/");
+}

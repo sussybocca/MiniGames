@@ -1,0 +1,17 @@
+@page "/about"
+@inject ChaosService Chaos
+
+<PageTitle>About - MiniGames</PageTitle>
+
+<div class="about-container @Chaos.GetRandomThemeClass()">
+    <h1>About MiniGames</h1>
+    <p>Welcome to MiniGames – a chaotic retro game emulator platform.</p>
+    <p>Each game can be installed on three fully functional devices:</p>
+    <ul>
+        <li><strong>Nintendo DS</strong> – With D-pad and A/B buttons.</li>
+        <li><strong>Mobile (Android/iPhone)</strong> – Touch screen simulation.</li>
+        <li><strong>Computer</strong> – Keyboard controls.</li>
+    </ul>
+    <p>Chaos mode randomly injects glitches, simulated errors, and broken themes. Toggle it in the sidebar.</p>
+    <p>All games are loaded via a simple JSON file – add your own!</p>
+</div>

@@ -1,0 +1,168 @@
+@namespace MiniGames.Emulators.PC
+@attribute [Route("/pc/play")]
+@inject ChaosService Chaos
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="pc-emulator @(Chaos?.GetRandomThemeClass() ?? "")">
+    <div class="pc-screen">
+        @if (_showLogin)
+        {
+            <div class="login-overlay">
+                <div class="login-box">
+                    <h3>Windows 98 Login</h3>
+                    <input type="text" placeholder="Username" @bind="_username" />
+                    <input type="password" placeholder="Password" @bind="_password" />
+                    <button @onclick="() => _showLogin = false">Login</button>
+                    <button @onclick="() => _showLogin = false">Cancel</button>
+                </div>
+            </div>
+        }
+        @if (Chaos?.ShouldSimulateError() == true)
+        {
+            <div class="simulated-error">
+                <strong>⚠️ SYSTEM CRASH</strong>
+                <p>Exception: 0x0000001A (KMODE_EXCEPTION_NOT_HANDLED)</p>
+                <button @onclick="ReloadGame">Restart</button>
+            </div>
+        }
+        else
+        {
+            <iframe src="@GameUrl" @ref="iframe" class="game-frame"></iframe>
+        }
+    </div>
+
+    <div class="pc-keyboard">
+        @foreach (var row in _keyboardRows)
+        {
+            <div class="keyboard-row">
+                @foreach (var key in row)
+                {
+                    <button @onclick="() => SendKey(key.KeyValue)">@key.DisplayText</button>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public string GameUrl { get; set; } = "";
+    private ElementReference iframe;
+    private bool _showLogin = true;
+    private string _username = "";
+    private string _password = "";
+
+    private class KeyInfo
+    {
+        public string KeyValue { get; set; }
+        public string DisplayText { get; set; }
+    }
+
+    private List<List<KeyInfo>> _keyboardRows = new()
+    {
+        new List<KeyInfo>
+        {
+            new KeyInfo { KeyValue = "Escape", DisplayText = "Esc" },
+            new KeyInfo { KeyValue = "F1", DisplayText = "F1" },
+            new KeyInfo { KeyValue = "F2", DisplayText = "F2" },
+            new KeyInfo { KeyValue = "F3", DisplayText = "F3" },
+            new KeyInfo { KeyValue = "F4", DisplayText = "F4" },
+            new KeyInfo { KeyValue = "F5", DisplayText = "F5" },
+            new KeyInfo { KeyValue = "F6", DisplayText = "F6" },
+            new KeyInfo { KeyValue = "F7", DisplayText = "F7" },
+            new KeyInfo { KeyValue = "F8", DisplayText = "F8" },
+            new KeyInfo { KeyValue = "F9", DisplayText = "F9" },
+            new KeyInfo { KeyValue = "F10", DisplayText = "F10" },
+            new KeyInfo { KeyValue = "F11", DisplayText = "F11" },
+            new KeyInfo { KeyValue = "F12", DisplayText = "F12" }
+        },
+        new List<KeyInfo>
+        {
+            new KeyInfo { KeyValue = "`", DisplayText = "`" },
+            new KeyInfo { KeyValue = "1", DisplayText = "1" },
+            new KeyInfo { KeyValue = "2", DisplayText = "2" },
+            new KeyInfo { KeyValue = "3", DisplayText = "3" },
+            new KeyInfo { KeyValue = "4", DisplayText = "4" },
+            new KeyInfo { KeyValue = "5", DisplayText = "5" },
+            new KeyInfo { KeyValue = "6", DisplayText = "6" },
+            new KeyInfo { KeyValue = "7", DisplayText = "7" },
+            new KeyInfo { KeyValue = "8", DisplayText = "8" },
+            new KeyInfo { KeyValue = "9", DisplayText = "9" },
+            new KeyInfo { KeyValue = "0", DisplayText = "0" },
+            new KeyInfo { KeyValue = "-", DisplayText = "-" },
+            new KeyInfo { KeyValue = "=", DisplayText = "=" },
+            new KeyInfo { KeyValue = "Backspace", DisplayText = "⌫" }
+        },
+        new List<KeyInfo>
+        {
+            new KeyInfo { KeyValue = "Tab", DisplayText = "Tab ↹" },
+            new KeyInfo { KeyValue = "q", DisplayText = "Q" },
+            new KeyInfo { KeyValue = "w", DisplayText = "W" },
+            new KeyInfo { KeyValue = "e", DisplayText = "E" },
+            new KeyInfo { KeyValue = "r", DisplayText = "R" },
+            new KeyInfo { KeyValue = "t", DisplayText = "T" },
+            new KeyInfo { KeyValue = "y", DisplayText = "Y" },
+            new KeyInfo { KeyValue = "u", DisplayText = "U" },
+            new KeyInfo { KeyValue = "i", DisplayText = "I" },
+            new KeyInfo { KeyValue = "o", DisplayText = "O" },
+            new KeyInfo { KeyValue = "p", DisplayText = "P" },
+            new KeyInfo { KeyValue = "[", DisplayText = "[" },
+            new KeyInfo { KeyValue = "]", DisplayText = "]" },
+            new KeyInfo { KeyValue = "\\", DisplayText = "\\" }
+        },
+        new List<KeyInfo>
+        {
+            new KeyInfo { KeyValue = "CapsLock", DisplayText = "Caps" },
+            new KeyInfo { KeyValue = "a", DisplayText = "A" },
+            new KeyInfo { KeyValue = "s", DisplayText = "S" },
+            new KeyInfo { KeyValue = "d", DisplayText = "D" },
+            new KeyInfo { KeyValue = "f", DisplayText = "F" },
+            new KeyInfo { KeyValue = "g", DisplayText = "G" },
+            new KeyInfo { KeyValue = "h", DisplayText = "H" },
+            new KeyInfo { KeyValue = "j", DisplayText = "J" },
+            new KeyInfo { KeyValue = "k", DisplayText = "K" },
+            new KeyInfo { KeyValue = "l", DisplayText = "L" },
+            new KeyInfo { KeyValue = ";", DisplayText = ";" },
+            new KeyInfo { KeyValue = "'", DisplayText = "'" },
+            new KeyInfo { KeyValue = "Enter", DisplayText = "↵" }
+        },
+        new List<KeyInfo>
+        {
+            new KeyInfo { KeyValue = "Shift", DisplayText = "Shift" },
+            new KeyInfo { KeyValue = "z", DisplayText = "Z" },
+            new KeyInfo { KeyValue = "x", DisplayText = "X" },
+            new KeyInfo { KeyValue = "c", DisplayText = "C" },
+            new KeyInfo { KeyValue = "v", DisplayText = "V" },
+            new KeyInfo { KeyValue = "b", DisplayText = "B" },
+            new KeyInfo { KeyValue = "n", DisplayText = "N" },
+            new KeyInfo { KeyValue = "m", DisplayText = "M" },
+            new KeyInfo { KeyValue = ",", DisplayText = "," },
+            new KeyInfo { KeyValue = ".", DisplayText = "." },
+            new KeyInfo { KeyValue = "/", DisplayText = "/" },
+            new KeyInfo { KeyValue = "Shift", DisplayText = "Shift" }
+        },
+        new List<KeyInfo>
+        {
+            new KeyInfo { KeyValue = "Control", DisplayText = "Ctrl" },
+            new KeyInfo { KeyValue = "Alt", DisplayText = "Alt" },
+            new KeyInfo { KeyValue = " ", DisplayText = "Space" },
+            new KeyInfo { KeyValue = "Alt", DisplayText = "Alt" },
+            new KeyInfo { KeyValue = "Control", DisplayText = "Ctrl" },
+            new KeyInfo { KeyValue = "ArrowLeft", DisplayText = "←" },
+            new KeyInfo { KeyValue = "ArrowUp", DisplayText = "↑" },
+            new KeyInfo { KeyValue = "ArrowDown", DisplayText = "↓" },
+            new KeyInfo { KeyValue = "ArrowRight", DisplayText = "→" }
+        }
+    };
+
+    private async Task SendKey(string key)
+    {
+        if (JS != null)
+            await JS.InvokeVoidAsync("pcEmulator.sendKey", iframe, key);
+    }
+
+    private void ReloadGame()
+    {
+        GameUrl = GameUrl + "?reload=" + Guid.NewGuid();
+    }
+}

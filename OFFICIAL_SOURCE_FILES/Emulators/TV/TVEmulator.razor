@@ -1,0 +1,89 @@
+@namespace MiniGames.Emulators.TV
+@attribute [Route("/tv/play")]
+@inject TVService TV
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="tv-emulator">
+    <div class="tv-set">
+        <!-- Screen -->
+        <div class="screen-bezel">
+            <div class="screen">
+                @if (!TV.IsOn)
+                {
+                    <div class="screen-off">📺</div>
+                }
+                else if (TV.CurrentChannel == null)
+                {
+                    <div class="no-signal">No Signal<br />Add games to games.json</div>
+                }
+                else
+                {
+                    <iframe src="@TV.CurrentChannel.GamePath" class="game-frame"></iframe>
+                }
+            </div>
+            <div class="power-led @(TV.IsOn ? "on" : "off")"></div>
+        </div>
+
+        <!-- Remote Control -->
+        <div class="remote">
+            <div class="remote-header">
+                <span class="brand">MiniGames</span>
+                <span class="model">TV Remote</span>
+            </div>
+
+            <!-- Channel Grid (app list) -->
+            <div class="channel-grid">
+                @foreach (var channel in TV.Channels.Select((game, idx) => new { game, idx }))
+                {
+                    <button class="channel-button @(TV.CurrentChannel == channel.game ? "active" : "")"
+                            @onclick="() => TV.SetChannel(channel.idx)"
+                            title="@channel.game.Name">
+                        <span class="channel-number">@(channel.idx + 1)</span>
+                        <span class="channel-name">@channel.game.Name</span>
+                    </button>
+                }
+            </div>
+
+            <!-- Volume & Power Controls -->
+            <div class="control-panel">
+                <button class="power-btn" @onclick="TV.TogglePower">⏻</button>
+                <div class="volume-control">
+                    <button @onclick="TV.VolumeDown">−</button>
+                    <span class="volume-display">
+                        @if (TV.IsMuted)
+                        {
+                            <span>🔇</span>
+                        }
+                        else
+                        {
+                            <span>🔊 @TV.Volume%</span>
+                        }
+                    </span>
+                    <button @onclick="TV.VolumeUp">+</button>
+                    <button @onclick="TV.ToggleMute">🔇</button>
+                </div>
+            </div>
+
+            <!-- Channel Navigation -->
+            <div class="channel-nav">
+                <button @onclick="TV.PrevChannel">⟨ Prev</button>
+                <button @onclick="TV.NextChannel">Next ⟩</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await TV.InitializeAsync();
+        TV.OnStateChanged += StateHasChanged;
+        Console.WriteLine($"TV initialized with {TV.Channels.Count} channels. Current: {TV.CurrentChannel?.Name ?? "none"}");
+    }
+
+    public void Dispose()
+    {
+        TV.OnStateChanged -= StateHasChanged;
+    }
+}

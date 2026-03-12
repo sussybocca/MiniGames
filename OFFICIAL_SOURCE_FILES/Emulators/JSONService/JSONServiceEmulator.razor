@@ -1,0 +1,60 @@
+@namespace MiniGames.Emulators.JSONService
+@inject OfflineGameGenerator Generator
+@inject IJSRuntime JS
+
+<div class="json-service">
+    <h2>JSON Game Generator – Folder Upload</h2>
+    <p>Upload a ZIP file containing your game folder structure (must include MiniJson, EXTERNAL_ASSETS, and at least 3 .json files).</p>
+    <input type="file" id="zipFile" @onchange="OnFileSelected" accept=".zip" />
+    @if (_generatedHtml != null)
+    {
+        <div class="game-container" style="margin-top:20px;">
+            <iframe srcdoc="@_generatedHtml" style="width:1024px; height:768px; border:2px solid #8a2be2; border-radius:8px;"></iframe>
+        </div>
+    }
+    else if (_error != null)
+    {
+        <div style="color:#f00;">@_error</div>
+    }
+</div>
+
+@code {
+    private string? _generatedHtml;
+    private string? _error;
+
+    private async Task OnFileSelected(ChangeEventArgs e)
+    {
+        _error = null;
+        _generatedHtml = null;
+
+        try
+        {
+            // Get the file from the input element using JS
+            var file = await JS.InvokeAsync<IJSObjectReference>("getUploadedZip", "zipFile");
+            if (file == null)
+            {
+                _error = "No file selected.";
+                return;
+            }
+
+            // Read the zip content as byte array (Uint8Array)
+            var bytes = await JS.InvokeAsync<byte[]>("readZipAsBytes", file);
+
+            // Use JSZip in JavaScript to extract files (returns dictionary of filename -> base64)
+            var fileDictBase64 = await JS.InvokeAsync<Dictionary<string, string>>("extractZip", bytes);
+
+            // Convert base64 strings to byte arrays
+            var fileDict = fileDictBase64.ToDictionary(
+                kv => kv.Key,
+                kv => Convert.FromBase64String(kv.Value)
+            );
+
+            // Pass the file dictionary to the generator
+            _generatedHtml = await Generator.GenerateGameFromFolderStructureAsync(fileDict);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error generating game: {ex.Message}";
+        }
+    }
+}

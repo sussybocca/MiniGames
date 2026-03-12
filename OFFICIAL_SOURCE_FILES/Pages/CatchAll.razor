@@ -1,0 +1,73 @@
+@page "/{*pagePath}"
+@using MiniGames.Pages
+@using MiniGames.Emulators.DS
+@using MiniGames.Emulators.Mobile
+@using MiniGames.Emulators.Computer
+
+
+@using MiniGames.Emulators.PC
+@using MiniGames.Emulators.NintendoDS2
+@inject RouteChaosService ChaosRoute
+@inject NavigationManager Navigation
+@inject GameService GameService
+
+@if (_realPath != null)
+{
+    @if (_realPath == "/")
+    {
+        <Home />
+    }
+    else if (_realPath == "/about")
+    {
+        <About />
+    }
+    else if (_realPath.StartsWith("/game/"))
+    {
+        var folder = _realPath.Substring(6); // remove "/game/"
+        <Game Folder="@folder" />
+    }
+   
+   
+    
+    else if (_realPath == "/pc/play")
+    {
+        <PCEmulator GameUrl="@_gamePath" />
+    }
+    else if (_realPath == "/nds2/play")
+    {
+        <NintendoDS2 GameUrl="@_gamePath" />
+    }
+    else if (_realPath == "/ds/play")
+    {
+        <DSEmulator GameUrl="@_gamePath" />
+    }
+    else
+    {
+        <PageTitle>Not found</PageTitle>
+        <p>Sorry, there's nothing at this address.</p>
+    }
+}
+else
+{
+    <PageTitle>Not found</PageTitle>
+    <p>Sorry, there's nothing at this address.</p>
+}
+
+@code {
+    [Parameter] public string? pagePath { get; set; }
+    private string? _realPath;
+    private string? _gamePath;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(pagePath))
+        {
+            _realPath = ChaosRoute.GetRealPath(pagePath);
+        }
+
+        // Pre-fetch a default game path for emulators that need it
+        var games = await GameService.GetGamesAsync();
+        var firstGame = games.FirstOrDefault();
+        _gamePath = firstGame?.GamePath;
+    }
+}

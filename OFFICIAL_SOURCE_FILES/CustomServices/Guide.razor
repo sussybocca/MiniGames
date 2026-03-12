@@ -1,0 +1,28 @@
+@page "/guide"
+@namespace MiniGames.CustomServices
+@using MiniGames.CustomServices.Services
+@inject IGuideService GuideService
+@inject NavigationManager Navigation
+
+<PageTitle>User Guide</PageTitle>
+
+<div class="guide-container">
+    <h1>📖 DS3 Emulator User Guide</h1>
+    <p class="guide-intro">@GuideService.GetIntroduction()</p>
+
+    <div class="guide-sections">
+        @foreach (var section in GuideService.GetSections())
+        {
+            <div class="guide-section">
+                <h2>@(section.Title)</h2>   @* Fixed: parentheses prevent Razor directive parsing *@
+                <div class="section-content">@(section.Content)</div>
+            </div>
+        }
+    </div>
+
+    <button class="back-home" @onclick="GoHome">← Return Home</button>
+</div>
+
+@code {
+    private void GoHome() => Navigation.NavigateTo("/");
+}

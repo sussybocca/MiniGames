@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <!-- Required for Roslyn to read .dll files in Blazor WASM -->
+    <WasmEnableWebcil>false</WasmEnableWebcil>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="MoonSharp" Version="2.0.0" />
+    <!-- Roslyn for dynamic C# compilation -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.8.0" />
+  </ItemGroup>
+
+  <!-- coreboy-net8 emulator reference -->
+  <ItemGroup>
+    <ProjectReference Include="External\coreboy-net8\coreboy\coreboy.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+  <Compile Remove="External\coreboy-net8\coreboy\**\*.cs" />
+  <None Include="External\coreboy-net8\coreboy\**\*.cs" />
+</ItemGroup>
+
+</Project>
