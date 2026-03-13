@@ -1,17 +1,28 @@
 [build]
   publish = "wwwroot"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# Ensure .gb files are served as binary and not redirected
 [[headers]]
   for = "*.gb"
   [headers.values]
   Content-Type = "application/octet-stream"
   Cache-Control = "public, max-age=0, must-revalidate"
+
 [[headers]]
   for = "/binjgb/*"
   [headers.values]
   Cross-Origin-Embedder-Policy = "require-corp"
   Cross-Origin-Opener-Policy = "same-origin"
+
+# Prevent SPA redirect for ROM files
+[[redirects]]
+  from = "/games/*"
+  to = "/games/:splat"
+  status = 200
+  force = true
+
+# Catch-all SPA redirect (must come last)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
