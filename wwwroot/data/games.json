@@ -3,6 +3,6 @@
   ["index.html", "snake", "snake"],
   ["game.html", "tetris", "tetris"],
   ["play.html", "pong", "pong"],
-  ["GBDoom_jam.gb", "fire", "fire"],
+  ["dude.gb", "fire", "fire"],
   ["dude.html", "fire (HTML)", "fire-html"]
 ]
