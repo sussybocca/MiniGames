@@ -1,5 +1,4 @@
 [
-  ["index.html", "dude", "dude"],
   ["index.html", "snake", "snake"],
   ["game.html", "tetris", "tetris"],
   ["play.html", "pong", "pong"],
