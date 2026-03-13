@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "public": "wwwroot",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
@@ -21,11 +20,11 @@
   "routes": [
     {
       "src": "/games/(.*)\\.gb",
-      "dest": "/games/$1.gb"
+      "dest": "/wwwroot/games/$1.gb"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/wwwroot/index.html"
     }
   ]
 }
