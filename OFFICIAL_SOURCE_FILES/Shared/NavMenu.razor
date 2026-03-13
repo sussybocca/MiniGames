@@ -70,8 +70,33 @@
         }
     </div>
 
+    <!-- Universal Modder Section (New) -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("universalModder")'>
+            <span>🛠️ Universal Modder</span>
+            <span class="toggle-icon">@GetIcon(_universalModderOpen)</span>
+        </div>
+        @if (_universalModderOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/emulator/universal-modder">Launch Modder</NavLink>
+            </div>
+        }
+    </div>
    
-  
+    <!-- Three.js Examples Section (New) -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("three")'>
+            <span>🎨 Three.js Examples</span>
+            <span class="toggle-icon">@GetIcon(_threeOpen)</span>
+        </div>
+        @if (_threeOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/three">View Gallery</NavLink>
+            </div>
+        }
+    </div>
 
     <!-- PC Section -->
     <div class="nav-section">
@@ -180,6 +205,8 @@
     private bool _computerOpen = false;
     private bool _gbOpen = false;
     private bool _gameboy3Open = false; // New
+    private bool _universalModderOpen = false; // New
+    private bool _threeOpen = false; // New Three.js section
     private bool _atariOpen = false;
     private bool _pspOpen = false;
     private bool _pcOpen = false;
@@ -200,6 +227,8 @@
             case "computer": _computerOpen = !_computerOpen; break;
             
             case "gameboy3": _gameboy3Open = !_gameboy3Open; break; // New
+            case "universalModder": _universalModderOpen = !_universalModderOpen; break; // New
+            case "three": _threeOpen = !_threeOpen; break; // New
            
             case "pc": _pcOpen = !_pcOpen; break;
             case "nds2": _nds2Open = !_nds2Open; break;
