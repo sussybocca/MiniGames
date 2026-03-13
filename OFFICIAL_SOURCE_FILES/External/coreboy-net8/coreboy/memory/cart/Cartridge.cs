@@ -12,7 +12,58 @@ public class Cartridge : IAddressSpace
 		GBC = 0xc0,
 		NON_GBC = 0
 	}
+// Add this constructor to the Cartridge class
+public Cartridge(byte[] romData)
+{
+    int[] rom = romData.Select(x => (int)x).ToArray();
+    var type = CartridgeTypeExtensions.GetById(rom[0x0147]);
 
+    Title = GetTitle(rom);
+
+    var gameboyType = GetFlag(rom[0x0143]);
+    int romBanks = GetRomBanks(rom[0x0148]);
+    int ramBanks = GetRamBanks(rom[0x0149]);
+
+    if (ramBanks == 0 && type.IsRam())
+    {
+        ramBanks = 1;
+    }
+
+    // No battery saves in WebAssembly – use NullBattery
+    IBattery battery = new NullBattery();
+
+    if (type.IsMbc1())
+    {
+        _addressSpace = new Mbc1(rom, battery, romBanks, ramBanks);
+    }
+    else if (type.IsMbc2())
+    {
+        _addressSpace = new Mbc2(rom, battery);
+    }
+    else if (type.IsMbc3())
+    {
+        _addressSpace = new Mbc3(rom, battery, ramBanks);
+    }
+    else if (type.IsMbc5())
+    {
+        _addressSpace = new Mbc5(rom, battery, ramBanks);
+    }
+    else
+    {
+        _addressSpace = new Rom(rom, type, romBanks, ramBanks);
+    }
+
+    // Disable boot ROM – we don't have it in WebAssembly
+    dmgBootstrap = 1;
+
+    // Determine GBC mode from the header
+    Gbc = gameboyType switch
+    {
+        GameboyTypeFlag.NON_GBC => false,
+        GameboyTypeFlag.GBC => true,
+        _ => false // UNIVERSAL – default to DMG (you could change this if desired)
+    };
+}
 	public bool Gbc { get; }
 	public string Title { get; }
 
@@ -182,3 +233,4 @@ public class Cartridge : IAddressSpace
 		};
 	}
 }
+
