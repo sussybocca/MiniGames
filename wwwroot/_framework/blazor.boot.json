@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "MiniGames",
   "resources": {
-    "hash": "sha256-Uubui7Ra0/eQnczzXbDzHZM/JSGqi9HBMXkJeUY8P+c=",
+    "hash": "sha256-mu8bUHXvlV2+2NUuclMDFTZ3TIr6j1i250JYeXwtQk8=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-4g0GzvOXSwZvTLca4PrWJkoeltz+V9IF/hEFDcnVros="
     },
@@ -39,7 +39,7 @@
       "Microsoft.JSInterop.dll": "sha256-3exYDl0rjh57TjNeORHFOLBCvGPv6/JR5tgGuto3es4=",
       "Microsoft.JSInterop.WebAssembly.dll": "sha256-oL/28/W/WGVbwsKDjfhqSn22/E+ixn+BqIUlrZUs2uc=",
       "Microsoft.Win32.Registry.dll": "sha256-tlvP+v23/f2el5/dDQE1COwQo4jveAaqeZ/f4Q/MbFE=",
-      "MiniGames.dll": "sha256-FWryMyeSfz1h5rpUi8yq+aMuVKYy7N0r60dBNcq5SLs=",
+      "MiniGames.dll": "sha256-HLDifJK0t8YGdur99WjwjVcj5BwU4iUhMvpXBV129Ag=",
       "MoonSharp.Interpreter.dll": "sha256-0cr4waHNdmm3SdTKzdqI6UnVE4uG6Kw/c5Q6vr1ufhg=",
       "NAudio.Asio.dll": "sha256-ygN4AhcTmzf39baSHVne+40kmIMVsWsWenf6iMqn0A8=",
       "NAudio.Core.dll": "sha256-/PST/Eei9HimUwOIa5dfvb9xTLsfLXn3/Ol+S7FrAag=",
