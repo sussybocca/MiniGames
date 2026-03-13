@@ -1,0 +1,386 @@
+@page "/crusher-sandbox"
+@using VelcroPhysics.Dynamics
+@using VelcroPhysics.Factories
+@using VelcroPhysics.Collision
+@using VelcroPhysics.Collision.Shapes
+@using VelcroPhysics.Collision.Handlers
+@using VelcroPhysics.Collision.ContactSystem
+@using Microsoft.Xna.Framework
+@using MiniGames.Services
+@implements IDisposable
+@inject IJSRuntime JS
+@inject ChaosService Chaos
+
+<div style="display: flex; flex-direction: column; height: 100vh; background: #2a4a6a;">
+    <!-- Toolbar -->
+    <div style="padding: 10px; background: #1a3a5a; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button @onclick="() => _currentTool = Tool.Car" style="background: #ff6b6b;">🚗 Car</button>
+        <button @onclick="() => _currentTool = Tool.Tree" style="background: #6b8e23;">🌲 Tree</button>
+        <button @onclick="() => _currentTool = Tool.House" style="background: #cd853f;">🏠 House</button>
+        <button @onclick="() => _currentTool = Tool.Boulder" style="background: #a0a0a0;">🪨 Boulder</button>
+        <button @onclick="() => _currentTool = Tool.Wall" style="background: #aaa;">🧱 Wall</button>
+        <button @onclick="() => _currentTool = Tool.Dig" style="background: #8b4513;">⛏️ Dig</button>
+        <button @onclick="SpawnVehicle" style="background: #4682b4;">🚛 Spawn Truck</button>
+        <button @onclick="ToggleWind" style="background: @(_windEnabled ? "#4caf50" : "#666");">🌪️ Wind</button>
+        <button @onclick="DropBomb" style="background: #dc143c;">💣 Bomb</button>
+        <button @onclick="ClearWorld" style="background: #dc3545;">🗑️ Clear</button>
+        @if (Chaos.IsChaosModeEnabled)
+        {
+            <div style="color: #ff0; margin-left: auto;">🌀 CHAOS ACTIVE</div>
+        }
+    </div>
+
+    <!-- Canvas and Side Panel -->
+    <div style="flex: 1; display: flex;">
+        <canvas @ref="_canvas" width="1200" height="800" 
+                @onmousedown="OnMouseDown"
+                @onmousemove="OnMouseMove"
+                @onmouseup="OnMouseUp"
+                style="flex:1; background: #87CEEB; cursor: crosshair;">
+        </canvas>
+
+        <div style="width: 250px; background: #1a3a5a; color: white; padding: 10px;">
+            <h3>📊 Stats</h3>
+            <div>FPS: @_fps</div>
+            <div>Bodies: @_bodies.Count</div>
+            <div>Wind: @_windSpeed m/s</div>
+            <div>Tool: @_currentTool</div>
+            <hr>
+            <h4>📋 Controls</h4>
+            <ul>
+                <li>Click to spawn object</li>
+                <li>Dig: click and drag to remove terrain</li>
+                <li>Bomb: explodes nearby objects</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ElementReference _canvas;
+    private World _world;
+    private List<Body> _bodies = new();
+    private List<Body> _terrainBodies = new();
+    private Tool _currentTool = Tool.Car;
+    private bool _isDrawing;
+    private Vector2 _lastMousePos;
+    private bool _windEnabled;
+    private float _windSpeed = 2f;
+    private int _fps;
+    private System.Threading.Timer _physicsTimer;
+    private Random _rand = new();
+
+    public enum Tool { Car, Tree, House, Boulder, Wall, Dig }
+
+    private struct RgbColor
+    {
+        public byte R { get; set; }
+        public byte G { get; set; }
+        public byte B { get; set; }
+        public RgbColor(byte r, byte g, byte b) { R = r; G = g; B = b; }
+        public string ToHex() => $"#{R:X2}{G:X2}{B:X2}";
+    }
+
+    private class ObjectData
+    {
+        public Tool Type { get; set; }
+        public float Health { get; set; } = 100f;
+        public RgbColor Color { get; set; } = new RgbColor(255, 255, 255);
+        public float Density { get; set; } = 1f; // for mass calculation
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _world = new World(new Vector2(0, 20f));
+        _world.ContactManager.BeginContact += OnCollision;
+
+        // Ground with friction
+        var ground = BodyFactory.CreateEdge(_world, new Vector2(0, 700), new Vector2(1200, 700));
+        ground.BodyType = BodyType.Static;
+        ground.Friction = 0.8f;
+        ground.Restitution = 0.1f;
+        _terrainBodies.Add(ground);
+
+        _physicsTimer = new System.Threading.Timer(async _ => await UpdatePhysics(), null, 0, 16);
+    }
+
+    // Your contact system – unchanged!
+    private bool OnCollision(VelcroPhysics.Collision.ContactSystem.Contact contact)
+    {
+        var bodyA = contact.FixtureA.Body;
+        var bodyB = contact.FixtureB.Body;
+        if (bodyA.UserData is ObjectData dataA && bodyB.UserData is ObjectData dataB)
+        {
+            // Improved damage: based on mass and relative velocity
+            float impulse = contact.Manifold.PointCount > 0 ? contact.Manifold.LocalPoint.Length() : 0;
+            float relativeVel = (bodyA.LinearVelocity - bodyB.LinearVelocity).Length();
+            float damage = impulse * 0.1f + relativeVel * 0.5f * (bodyA.Mass + bodyB.Mass) / 10;
+
+            if (damage > 10)
+            {
+                dataA.Health -= damage;
+                dataB.Health -= damage;
+
+                // Visual feedback: darken color
+                dataA.Color = Darken(dataA.Color, (int)damage);
+                dataB.Color = Darken(dataB.Color, (int)damage);
+            }
+        }
+        return true;
+    }
+
+    private async Task UpdatePhysics()
+    {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        _world.Step(1 / 60f);
+
+        if (_windEnabled)
+        {
+            foreach (var body in _bodies)
+            {
+                body.ApplyForce(new Vector2(_windSpeed * body.Mass * 5, 0));
+            }
+        }
+
+        // Remove dead objects
+        for (int i = _bodies.Count - 1; i >= 0; i--)
+        {
+            var body = _bodies[i];
+            if (body.UserData is ObjectData data && data.Health <= 0)
+            {
+                _world.RemoveBody(body);
+                _bodies.RemoveAt(i);
+            }
+        }
+
+        watch.Stop();
+        _fps = (int)(1000 / Math.Max(1, watch.ElapsedMilliseconds));
+        await InvokeAsync(StateHasChanged);
+        await DrawCanvas();
+    }
+
+    private async Task DrawCanvas()
+    {
+        var objects = _bodies.Select(b =>
+        {
+            var data = (ObjectData)b.UserData;
+            return new
+            {
+                position = new { x = b.Position.X, y = b.Position.Y },
+                rotation = b.Rotation,
+                type = data.Type.ToString().ToLower(),
+                color = data.Color.ToHex(),
+                width = GetWidth(data.Type),
+                height = GetHeight(data.Type),
+                size = GetSize(data.Type),
+                health = data.Health
+            };
+        }).ToList();
+
+        var terrain = new[] { new { x = 0f, y = 700f }, new { x = 1200f, y = 700f } };
+        var stats = new { fps = _fps, wind = _windSpeed };
+        await JS.InvokeVoidAsync("crusherRenderer.draw", _canvas, objects, terrain, stats);
+    }
+
+    private void OnMouseDown(MouseEventArgs e)
+    {
+        _isDrawing = true;
+        _lastMousePos = new Vector2((int)e.OffsetX, (int)e.OffsetY);
+        if (_currentTool == Tool.Dig)
+        {
+            DigTerrain(_lastMousePos);
+        }
+        else
+        {
+            SpawnObject(_lastMousePos);
+        }
+    }
+
+    private void OnMouseMove(MouseEventArgs e)
+    {
+        if (!_isDrawing) return;
+        var pos = new Vector2((int)e.OffsetX, (int)e.OffsetY);
+        if (_currentTool == Tool.Dig)
+        {
+            DigLine(_lastMousePos, pos);
+        }
+        _lastMousePos = pos;
+    }
+
+    private void OnMouseUp(MouseEventArgs e)
+    {
+        _isDrawing = false;
+    }
+
+    private void DigTerrain(Vector2 pos)
+    {
+        var toRemove = new List<Body>();
+        foreach (var body in _terrainBodies)
+        {
+            if (Vector2.Distance(body.Position, pos) < 30)
+            {
+                toRemove.Add(body);
+            }
+        }
+        foreach (var body in toRemove)
+        {
+            _world.RemoveBody(body);
+            _terrainBodies.Remove(body);
+        }
+    }
+
+    private void DigLine(Vector2 start, Vector2 end)
+    {
+        float dist = Vector2.Distance(start, end);
+        int steps = (int)(dist / 10);
+        for (int i = 0; i <= steps; i++)
+        {
+            float t = i / (float)steps;
+            var point = Vector2.Lerp(start, end, t);
+            DigTerrain(point);
+        }
+    }
+
+    private void SpawnObject(Vector2 pos)
+    {
+        Body body;
+        var density = GetDensity(_currentTool);
+        ObjectData data = new ObjectData { Type = _currentTool, Color = GetRandomColor(), Density = density };
+
+        switch (_currentTool)
+        {
+            case Tool.Car:
+                body = BodyFactory.CreateRectangle(_world, 40, 20, density, pos);
+                break;
+            case Tool.Tree:
+                var trunk = BodyFactory.CreateRectangle(_world, 10, 30, density, pos);
+                trunk.UserData = data;
+                _bodies.Add(trunk);
+                var foliage = BodyFactory.CreateCircle(_world, 15, density * 0.5f, pos - new Vector2(0, 20));
+                foliage.UserData = new ObjectData { Type = Tool.Tree, Color = new RgbColor(34, 139, 34), Density = density * 0.3f };
+                _bodies.Add(foliage);
+                return;
+            case Tool.House:
+                body = BodyFactory.CreateRectangle(_world, 40, 20, density, pos);
+                break;
+            case Tool.Boulder:
+                body = BodyFactory.CreateCircle(_world, 15, density, pos);
+                break;
+            case Tool.Wall:
+                body = BodyFactory.CreateRectangle(_world, 20, 40, density, pos);
+                break;
+            default:
+                return;
+        }
+
+        body.BodyType = BodyType.Dynamic;
+        body.Restitution = GetRestitution(_currentTool);
+        body.Friction = GetFriction(_currentTool);
+        body.UserData = data;
+        _bodies.Add(body);
+    }
+
+    private void SpawnVehicle()
+    {
+        var basePos = new Vector2(600, 500);
+        var cab = BodyFactory.CreateRectangle(_world, 30, 20, 1.5f, basePos);
+        cab.UserData = new ObjectData { Type = Tool.Car, Color = new RgbColor(0, 0, 255), Density = 1.5f };
+        _bodies.Add(cab);
+
+        var trailer = BodyFactory.CreateRectangle(_world, 50, 20, 1.2f, basePos + new Vector2(40, 0));
+        trailer.UserData = new ObjectData { Type = Tool.Car, Color = new RgbColor(128, 128, 128), Density = 1.2f };
+        _bodies.Add(trailer);
+
+        var joint = JointFactory.CreateRevoluteJoint(_world, cab, trailer, Vector2.Zero);
+    }
+
+    private void DropBomb()
+    {
+        var center = new Vector2(600, 400);
+        foreach (var body in _bodies)
+        {
+            var dir = body.Position - center;
+            var dist = dir.Length();
+            if (dist < 250)
+            {
+                var force = Vector2.Normalize(dir) * (250 - dist) * 50f;
+                body.ApplyForce(force);
+                if (body.UserData is ObjectData data)
+                {
+                    data.Health -= 50; // massive damage
+                }
+            }
+        }
+    }
+
+    private void ToggleWind()
+    {
+        _windEnabled = !_windEnabled;
+        _windSpeed = _rand.Next(5, 20);
+    }
+
+    private void ClearWorld()
+    {
+        foreach (var body in _bodies) _world.RemoveBody(body);
+        _bodies.Clear();
+    }
+
+    private RgbColor GetRandomColor() => new RgbColor((byte)_rand.Next(256), (byte)_rand.Next(256), (byte)_rand.Next(256));
+
+    private RgbColor Darken(RgbColor color, int amount)
+    {
+        return new RgbColor(
+            (byte)Math.Max(0, color.R - amount),
+            (byte)Math.Max(0, color.G - amount),
+            (byte)Math.Max(0, color.B - amount)
+        );
+    }
+
+    private float GetDensity(Tool tool) => tool switch
+    {
+        Tool.Car => 0.8f,
+        Tool.Tree => 0.6f,
+        Tool.House => 1.2f,
+        Tool.Boulder => 2.5f,
+        Tool.Wall => 1.5f,
+        _ => 1f
+    };
+
+    private float GetRestitution(Tool tool) => tool switch
+    {
+        Tool.Boulder => 0.1f,
+        Tool.Car => 0.3f,
+        _ => 0.2f
+    };
+
+    private float GetFriction(Tool tool) => tool switch
+    {
+        Tool.Boulder => 0.9f,
+        Tool.Car => 0.7f,
+        _ => 0.5f
+    };
+
+    private float GetWidth(Tool tool) => tool switch
+    {
+        Tool.Car => 40,
+        Tool.Tree => 20,
+        Tool.House => 40,
+        Tool.Boulder => 30,
+        Tool.Wall => 20,
+        _ => 30
+    };
+
+    private float GetHeight(Tool tool) => tool switch
+    {
+        Tool.Car => 20,
+        Tool.Tree => 40,
+        Tool.House => 20,
+        Tool.Boulder => 30,
+        Tool.Wall => 40,
+        _ => 30
+    };
+
+    private float GetSize(Tool tool) => tool == Tool.Boulder ? 15 : 10;
+
+    public void Dispose() => _physicsTimer?.Dispose();
+}

@@ -1,0 +1,11 @@
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\coreboy.dll
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\coreboy.deps.json
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\coreboy.pdb
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\CommandLine.dll
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\NAudio.dll
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\NAudio.Asio.dll
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\NAudio.Core.dll
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\NAudio.Midi.dll
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\NAudio.Wasapi.dll
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\NAudio.WinMM.dll
+D:\MiniGames\External\coreboy-net8\coreboy\bin\Release\net8.0\publish\Newtonsoft.Json.dll

@@ -40,7 +40,8 @@
     <script src="js/psp-input.js"></script>
     <!-- PC emulator input -->
     <script src="js/pc-input.js"></script>
-  
+    <!-- Trippy canvas helper -->
+    <script src="js/canvasHelper.js"></script>
     <!-- DS2 emulator helper (touch coordinates) -->
     <script>
         window.getElementRect = function(element) {
@@ -57,9 +58,99 @@
     <script src="js/gameboy2-input.js"></script>
     <!-- DS3 emulator core -->
     <script src="js/ds3-emulator-core.js"></script>
+    <script src="js/sandboxRenderer.js"></script>
+    <!-- Crusher Sandbox renderer -->
+    <script src="js/crusherRenderer.js"></script>
+    <!-- Physics Sandbox renderer -->
+    <script src="js/physicsRenderer.js"></script>
     <!-- jsGB library for GameBoy emulation -->
     <script src="https://cdn.jsdelivr.net/npm/jsgb@latest/dist/jsgb.js"></script>
+    <!-- JSON Service helper and JSZip -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        window.getUploadedZip = (inputId) => {
+            const input = document.getElementById(inputId);
+            return input?.files?.[0] || null;
+        };
+
+        window.readZipAsBytes = (file) => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(new Uint8Array(e.target.result));
+                reader.onerror = (e) => reject(e.error);
+                reader.readAsArrayBuffer(file);
+            });
+        };
+
+        window.extractZip = async (zipData) => {
+            const JSZip = window.JSZip;
+            const zip = await JSZip.loadAsync(zipData);
+            const files = {};
+            const promises = [];
+            zip.forEach((relativePath, file) => {
+                promises.push(
+                    file.async('base64').then(content => {
+                        files[relativePath] = content;
+                    })
+                );
+            });
+            await Promise.all(promises);
+            return files; // returns an object with base64 strings
+        };
+    </script>
+    <!-- GameBoy3 emulator renderer -->
+    <script>
+        window.gameboy3 = {
+            render: (canvas, rgba) => {
+                if (!canvas) {
+                    console.error('Canvas element is null');
+                    return;
+                }
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error('Could not get 2d context');
+                    return;
+                }
+                const imageData = ctx.createImageData(160, 144);
+                // rgba is a byte array of length 160*144*4
+                imageData.data.set(new Uint8ClampedArray(rgba));
+                ctx.putImageData(imageData, 0, 0);
+            }
+        };
+        <!-- Universal Modder -->
+        window.universalModder = {
+    sendMessage: (iframe, message) => {
+        iframe.contentWindow.postMessage(message, '*');
+    },
+    getGameState: (iframe) => {
+        return new Promise((resolve) => {
+            const handler = (event) => {
+                if (event.data.type === 'state') {
+                    window.removeEventListener('message', handler);
+                    resolve(event.data);
+                }
+            };
+            window.addEventListener('message', handler);
+            iframe.contentWindow.postMessage({ type: 'getState' }, '*');
+        });
+    }
+}; 
+
+
+
+window.showRandomAd = () => {
+    const ads = [
+        "Check out these awesome rocks! 🪨",
+        "Your ship is on fire! 🔥",
+        "Wind speed increasing! 🌪️",
+        "Bomb dropped! 💣"
+    ];
+    const ad = ads[Math.floor(Math.random() * ads.length)];
+    alert(`[CHAOS MODE] ${ad}`);
+};
+
+    </script>
+ 
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
-
 </html>

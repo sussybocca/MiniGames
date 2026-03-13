@@ -1,0 +1,562 @@
+@page "/elemental-sandbox"
+@using VelcroPhysics.Dynamics
+@using VelcroPhysics.Factories
+@using VelcroPhysics.Collision.Shapes
+@using Microsoft.Xna.Framework
+@using MiniGames.Services
+@implements IDisposable
+@inject IJSRuntime JS
+@inject ChaosService Chaos
+
+<div class="sandbox-container" style="display: flex; flex-direction: column; height: 100vh; background: #0a0f1e;">
+    
+    <!-- Scrollable Toolbar -->
+    <div style="padding: 10px; background: #1a1f2e; display: flex; gap: 5px; flex-wrap: wrap; overflow-y: auto; max-height: 140px; border-bottom: 2px solid #4a4a6a;">
+        @foreach (var elem in Enum.GetValues<Element>())
+        {
+            var color = GetElementColor(elem);
+            <button @onclick="() => SetCurrentElement(elem)" 
+                    style="background: @color; color: black; min-width: 60px; padding: 4px 8px; border-radius: 20px; border: 1px solid #0ff; font-weight: bold;"
+                    title="@elem">
+                @GetElementSymbol(elem)
+            </button>
+        }
+    </div>
+
+    <!-- Canvas + Stats -->
+    <div style="flex: 1; display: flex;">
+        <canvas @ref="_canvas" 
+                width="1200" 
+                height="800" 
+                @onmousedown="OnMouseDown"
+                @onmousemove="OnMouseMove"
+                @onmouseup="OnMouseUp"
+                style="flex: 1; background: #1e2a3a; cursor: crosshair;">
+        </canvas>
+        
+        <!-- Stats Panel -->
+        <div style="width: 280px; background: #1a1f2e; padding: 15px; color: #fff; overflow-y: auto;">
+            <h3>📊 Stats</h3>
+            <div>FPS: @_fps</div>
+            <div>Particles: @_bodies.Count</div>
+            <div>Global Temp: @_currentTemp°C</div>
+            <div>Wind: @_windSpeed m/s</div>
+            <div>Current: @_currentElement (@GetElementSymbol(_currentElement))</div>
+            
+            @if (Chaos.IsChaosModeEnabled)
+            {
+                <div style="margin-top: 20px;">
+                    <h4>🌀 Chaos Effects</h4>
+                    <button @onclick="SpawnRandomRock">🪨 Spawn Rock</button>
+                    <button @onclick="ShowRandomAd">📢 Show Ad</button>
+                </div>
+            }
+
+            <div style="margin-top: 20px;">
+                <h4>📋 Element Guide</h4>
+                <div style="font-size:0.75rem; columns:2;">
+                    @foreach (var elem in Enum.GetValues<Element>())
+                    {
+                        <div>@GetElementSymbol(elem) – @elem</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ElementReference _canvas;
+    private World _world;
+    private List<Body> _bodies = new();
+    private Element _currentElement = Element.Sand;
+    private bool _isDrawing;
+    private float _currentTemp = 20f;
+    private bool _windEnabled;
+    private float _windSpeed = 2f;
+    private int _fps;
+    private System.Threading.Timer _physicsTimer;
+    private Random _rand = new();
+
+    // Element definitions with atomic numbers and custom IDs
+    public enum Element
+{
+    // Atomic elements (1-118)
+    Hydrogen = 1,
+    Helium = 2,
+    Lithium = 3,
+    Beryllium = 4,
+    Boron = 5,
+    Carbon = 6,
+    Nitrogen = 7,
+    Oxygen = 8,
+    Fluorine = 9,
+    Neon = 10,
+    Sodium = 11,
+    Magnesium = 12,
+    Aluminum = 13,
+    Silicon = 14,
+    Phosphorus = 15,
+    Sulfur = 16,
+    Chlorine = 17,
+    Argon = 18,
+    Potassium = 19,
+    Calcium = 20,
+    Iron = 26,
+    Copper = 29,
+    Zinc = 30,
+    Silver = 47,
+    Tin = 50,
+    Gold = 79,
+    Mercury = 80,
+    Lead = 82,
+    // Compounds (>100)
+    Water = 101,
+    Wood = 102,
+    Oil = 103,
+    Steam = 104,
+    Ice = 105,
+    Sand = 106,
+    Salt = 107,
+    Gunpowder = 108,
+    Acid = 109,
+    Lava = 110,
+    Glass = 111,
+    Rubber = 112,
+    Plastic = 113,
+    Fire = 114   // Added Fire
+}    private class ParticleData
+    {
+        public Element Element { get; set; }
+        public float Temperature { get; set; } = 20f;
+        public bool IsOnFire { get; set; }
+        public float Health { get; set; } = 100f;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _world = new World(new Vector2(0, 9.82f)); // Earth gravity
+        _physicsTimer = new System.Threading.Timer(async _ => await UpdatePhysics(), null, 0, 16);
+    }
+
+    private async Task UpdatePhysics()
+    {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+        
+        _world.Step(1 / 60f);
+        
+        // Apply wind
+        if (_windEnabled)
+        {
+            foreach (var body in _bodies)
+            {
+                body.ApplyForce(new Vector2(_windSpeed * body.Mass * 2, 0));
+            }
+        }
+
+        // Process interactions (heat transfer, reactions, phase changes)
+        for (int i = _bodies.Count - 1; i >= 0; i--)
+        {
+            var body = _bodies[i];
+            if (body.UserData is not ParticleData data) continue;
+
+            // Heat transfer from nearby fire
+            if (data.Element != Element.Fire)
+            {
+                foreach (var other in _bodies)
+                {
+                    if (other.UserData is ParticleData otherData && otherData.Element == Element.Fire)
+                    {
+                        float dist = Vector2.Distance(body.Position, other.Position);
+                        if (dist < 50)
+                        {
+                            data.Temperature += 2f * (1 - dist/50);
+                        }
+                    }
+                }
+            }
+
+            // Element-specific reactions
+            switch (data.Element)
+            {
+                case Element.Fire:
+                    data.Temperature += 5f;
+                    if (data.Temperature > 1000) data.Temperature = 1000;
+                    break;
+
+                case Element.Wood:
+                case Element.Oil:
+                case Element.Gunpowder:
+                    if (data.IsOnFire || data.Temperature > GetFlashPoint(data.Element))
+                    {
+                        data.IsOnFire = true;
+                        data.Health -= 1f;
+                        if (data.Health <= 0)
+                        {
+                            RemoveBody(body);
+                            // Spawn fire
+                            var fire = BodyFactory.CreateCircle(_world, 5, 0.3f, body.Position);
+                            fire.BodyType = BodyType.Dynamic;
+                            fire.UserData = new ParticleData { Element = Element.Fire, Temperature = 500f };
+                            _bodies.Add(fire);
+                        }
+                    }
+                    break;
+
+                case Element.Ice:
+                    if (data.Temperature > 5)
+                    {
+                        data.Element = Element.Water;
+                        body.Restitution = 0.2f;
+                        body.Friction = 0.3f;
+                    }
+                    break;
+
+                case Element.Water:
+                    if (data.Temperature > 100)
+                    {
+                        data.Element = Element.Steam;
+                        body.Restitution = 0.5f;
+                        body.Friction = 0.1f;
+                    }
+                    else if (data.Temperature < 0)
+                    {
+                        data.Element = Element.Ice;
+                        body.Restitution = 0.1f;
+                        body.Friction = 0.5f;
+                    }
+                    break;
+
+                case Element.Steam:
+                    body.ApplyForce(new Vector2(0, -body.Mass * 20)); // rise
+                    if (data.Temperature < 80)
+                    {
+                        data.Element = Element.Water;
+                        body.Restitution = 0.2f;
+                        body.Friction = 0.3f;
+                    }
+                    break;
+
+                case Element.Lava:
+                    data.Temperature = 800f;
+                    // Lava cools to rock (we'll use obsidian as placeholder)
+                    if (_rand.Next(1000) == 0)
+                    {
+                        data.Element = Element.Sand; // simplified
+                    }
+                    break;
+
+                case Element.Mercury:
+                    // Liquid metal – stays liquid at room temp
+                    break;
+
+                // Metals: heat conduction, melting
+                default:
+                    if (IsMetal(data.Element))
+                    {
+                        if (data.Temperature > GetMeltingPoint(data.Element))
+                        {
+                            // Melt – we could change state, but for simplicity, just glow
+                        }
+                    }
+                    break;
+            }
+
+            // Cool down over time
+            data.Temperature -= 0.1f;
+            if (data.Temperature < _currentTemp) data.Temperature = _currentTemp;
+
+            // Cap extreme temps
+            if (data.Temperature > 2000) data.Temperature = 2000;
+        }
+
+        // Chaos Mode random events
+        if (Chaos.IsChaosModeEnabled && _rand.Next(100) == 0)
+        {
+            _windSpeed = (float)(_rand.NextDouble() * 20);
+            _windEnabled = true;
+            if (_rand.Next(2) == 0)
+            {
+                var pos = new Vector2(_rand.Next(1200), _rand.Next(800));
+                var fire = BodyFactory.CreateCircle(_world, 8, 0.3f, pos);
+                fire.BodyType = BodyType.Dynamic;
+                fire.UserData = new ParticleData { Element = Element.Fire, Temperature = 600f };
+                _bodies.Add(fire);
+            }
+        }
+
+        watch.Stop();
+        _fps = (int)(1000 / Math.Max(1, watch.ElapsedMilliseconds));
+        
+        await InvokeAsync(StateHasChanged);
+        await DrawCanvas();
+    }
+
+    private async Task DrawCanvas()
+    {
+        var particles = _bodies.Select(b =>
+        {
+            var data = (ParticleData)b.UserData;
+            return new
+            {
+                position = new { x = b.Position.X, y = b.Position.Y },
+                element = (int)data.Element,
+                temperature = data.Temperature,
+                onFire = data.IsOnFire,
+                health = data.Health,
+                velocity = new { x = b.LinearVelocity.X, y = b.LinearVelocity.Y }
+            };
+        }).ToList();
+
+        var stats = new
+        {
+            fps = _fps,
+            bodyCount = _bodies.Count,
+            temp = _currentTemp,
+            wind = _windSpeed
+        };
+
+        await JS.InvokeVoidAsync("drawSandboxFrame", _canvas, particles, GetElementSymbol(_currentElement), stats);
+    }
+
+    private void OnMouseDown(MouseEventArgs e)
+    {
+        _isDrawing = true;
+        AddBody((int)e.OffsetX, (int)e.OffsetY);
+    }
+
+    private void OnMouseMove(MouseEventArgs e)
+    {
+        if (_isDrawing)
+        {
+            AddBody((int)e.OffsetX, (int)e.OffsetY);
+        }
+    }
+
+    private void OnMouseUp(MouseEventArgs e)
+    {
+        _isDrawing = false;
+    }
+
+    private void AddBody(int x, int y)
+    {
+        if (x < 0 || x > 1200 || y < 0 || y > 800) return;
+
+        float density = GetDensity(_currentElement);
+        float radius = GetRadius(_currentElement);
+
+        var body = BodyFactory.CreateCircle(_world, radius, density, new Vector2(x, y));
+        body.BodyType = BodyType.Dynamic;
+        body.Restitution = 0.1f;
+        body.Friction = 0.5f;
+        body.UserData = new ParticleData
+        {
+            Element = _currentElement,
+            Temperature = _currentElement == Element.Fire || _currentElement == Element.Lava ? 800f : _currentTemp,
+            Health = (_currentElement == Element.Wood || _currentElement == Element.Oil || _currentElement == Element.Gunpowder) ? 100f : 0
+        };
+
+        _bodies.Add(body);
+    }
+
+    private void RemoveBody(Body body)
+    {
+        _world.RemoveBody(body);
+        _bodies.Remove(body);
+    }
+
+    private void SetCurrentElement(Element elem) => _currentElement = elem;
+
+    private void DropBomb()
+    {
+        var center = new Vector2(600, 400);
+        for (int i = _bodies.Count - 1; i >= 0; i--)
+        {
+            var body = _bodies[i];
+            var dir = body.Position - center;
+            var dist = dir.Length();
+            if (dist < 250)
+            {
+                var force = Vector2.Normalize(dir) * (250 - dist) * 25f;
+                body.ApplyForce(force);
+                if (body.UserData is ParticleData data)
+                {
+                    data.Temperature += 800f;
+                    if (IsFlammable(data.Element))
+                        data.IsOnFire = true;
+                }
+            }
+        }
+    }
+
+    private void SpawnShip()
+    {
+        // Wooden ship with metal mast
+        for (int i = 0; i < 20; i++)
+        {
+            var body = BodyFactory.CreateCircle(_world, 5, 0.7f, new Vector2(500 + i * 10, 300));
+            body.BodyType = BodyType.Dynamic;
+            body.UserData = new ParticleData { Element = Element.Wood, Health = 100f };
+            _bodies.Add(body);
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            var body = BodyFactory.CreateCircle(_world, 5, 0.7f, new Vector2(500 + i * 20, 250));
+            body.BodyType = BodyType.Dynamic;
+            body.UserData = new ParticleData { Element = Element.Wood, Health = 100f };
+            _bodies.Add(body);
+        }
+        for (int i = 0; i < 5; i++)
+        {
+            var body = BodyFactory.CreateCircle(_world, 4, 3f, new Vector2(600, 230 - i * 10));
+            body.BodyType = BodyType.Dynamic;
+            body.UserData = new ParticleData { Element = Element.Iron };
+            _bodies.Add(body);
+        }
+    }
+
+    private void ToggleWind()
+    {
+        _windEnabled = !_windEnabled;
+        _windSpeed = _rand.Next(5, 25);
+    }
+
+    private void ClearWorld()
+    {
+        foreach (var body in _bodies)
+            _world.RemoveBody(body);
+        _bodies.Clear();
+    }
+
+    private void SpawnRandomRock()
+    {
+        var elem = _rand.Next(2) == 0 ? Element.Iron : Element.Sand;
+        var body = BodyFactory.CreateCircle(_world, 15, 8f, new Vector2(_rand.Next(1200), _rand.Next(800)));
+        body.BodyType = BodyType.Dynamic;
+        body.UserData = new ParticleData { Element = elem, Temperature = _currentTemp };
+        _bodies.Add(body);
+    }
+
+    private async Task ShowRandomAd() => await JS.InvokeVoidAsync("showRandomAd");
+
+    public void Dispose() => _physicsTimer?.Dispose();
+
+    // Helper methods for element properties
+    private string GetElementSymbol(Element elem) => elem switch
+    {
+        Element.Hydrogen => "H",
+        Element.Helium => "He",
+        Element.Lithium => "Li",
+        Element.Beryllium => "Be",
+        Element.Boron => "B",
+        Element.Carbon => "C",
+        Element.Nitrogen => "N",
+        Element.Oxygen => "O",
+        Element.Fluorine => "F",
+        Element.Neon => "Ne",
+        Element.Sodium => "Na",
+        Element.Magnesium => "Mg",
+        Element.Aluminum => "Al",
+        Element.Silicon => "Si",
+        Element.Phosphorus => "P",
+        Element.Sulfur => "S",
+        Element.Chlorine => "Cl",
+        Element.Argon => "Ar",
+        Element.Potassium => "K",
+        Element.Calcium => "Ca",
+        Element.Iron => "Fe",
+        Element.Copper => "Cu",
+        Element.Zinc => "Zn",
+        Element.Silver => "Ag",
+        Element.Tin => "Sn",
+        Element.Gold => "Au",
+        Element.Mercury => "Hg",
+        Element.Lead => "Pb",
+        Element.Water => "H₂O",
+        Element.Wood => "Wood",
+        Element.Oil => "Oil",
+        Element.Steam => "Steam",
+        Element.Ice => "Ice",
+        Element.Sand => "Sand",
+        Element.Salt => "NaCl",
+        Element.Gunpowder => "Gun",
+        Element.Acid => "Acid",
+        Element.Lava => "Lava",
+        Element.Glass => "Glass",
+        Element.Rubber => "Rubber",
+        Element.Plastic => "Plastic",
+        _ => "?"
+    };
+
+    private string GetElementColor(Element elem) => elem switch
+    {
+        Element.Hydrogen => "#d9d9d9",
+        Element.Helium => "#d4b8b8",
+        Element.Carbon => "#3a3a3a",
+        Element.Oxygen => "#ff8080",
+        Element.Iron => "#b0b0b0",
+        Element.Copper => "#b87333",
+        Element.Gold => "#ffd700",
+        Element.Water => "#4a90e2",
+        Element.Wood => "#8b5a2b",
+        Element.Fire => "#e25822",
+        Element.Steam => "#c0c0ff",
+        Element.Ice => "#aaddff",
+        Element.Sand => "#c2a45a",
+        Element.Lava => "#ff5500",
+        _ => "#a0a0a0"
+    };
+
+    private float GetDensity(Element elem) => elem switch
+    {
+        Element.Hydrogen => 0.09f,
+        Element.Oxygen => 1.43f,
+        Element.Water => 1.0f,
+        Element.Wood => 0.7f,
+        Element.Iron => 7.8f,
+        Element.Copper => 8.9f,
+        Element.Gold => 19.3f,
+        Element.Mercury => 13.5f,
+        Element.Lead => 11.3f,
+        Element.Steam => 0.6f,
+        Element.Ice => 0.92f,
+        Element.Sand => 1.6f,
+        Element.Lava => 3.1f,
+        _ => 1.0f
+    };
+
+    private float GetRadius(Element elem) => 5f; // could vary by element
+
+    private bool IsMetal(Element elem) => elem switch
+    {
+        Element.Lithium or Element.Beryllium or Element.Sodium or Element.Magnesium or
+        Element.Aluminum or Element.Potassium or Element.Calcium or Element.Iron or
+        Element.Copper or Element.Zinc or Element.Silver or Element.Tin or Element.Gold or
+        Element.Mercury or Element.Lead => true,
+        _ => false
+    };
+
+    private bool IsFlammable(Element elem) => elem switch
+    {
+        Element.Wood or Element.Oil or Element.Gunpowder => true,
+        _ => false
+    };
+
+    private float GetFlashPoint(Element elem) => elem switch
+    {
+        Element.Wood => 300f,
+        Element.Oil => 200f,
+        Element.Gunpowder => 150f,
+        _ => 1000f
+    };
+
+    private float GetMeltingPoint(Element elem) => elem switch
+    {
+        Element.Iron => 1538f,
+        Element.Copper => 1085f,
+        Element.Gold => 1064f,
+        Element.Lead => 327f,
+        Element.Mercury => -38f,
+        _ => 1000f
+    };
+}

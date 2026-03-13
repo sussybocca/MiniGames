@@ -1,0 +1,207 @@
+@page "/physics-sandbox"
+@using VelcroPhysics.Dynamics
+@using VelcroPhysics.Factories
+@using VelcroPhysics.Collision.Shapes
+@using Microsoft.Xna.Framework
+@using MiniGames.Services
+@implements IDisposable
+@inject IJSRuntime JS
+@inject ChaosService Chaos
+
+<div style="display: flex; flex-direction: column; height: 100vh; background: #1a1a2e;">
+    <!-- Control Panel -->
+    <div style="padding: 10px; background: #16213e; color: white; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+        <div>
+            <label>Gravity X: <input type="range" min="-20" max="20" step="0.5" @bind="_gravityX" /> @_gravityX</label>
+        </div>
+        <div>
+            <label>Gravity Y: <input type="range" min="-20" max="20" step="0.5" @bind="_gravityY" /> @_gravityY</label>
+        </div>
+        <div>
+            <label>Friction: <input type="range" min="0" max="1" step="0.05" @bind="_friction" /> @_friction</label>
+        </div>
+        <div>
+            <label>Restitution: <input type="range" min="0" max="1" step="0.05" @bind="_restitution" /> @_restitution</label>
+        </div>
+        <div>
+            <label>Wind: <input type="range" min="0" max="50" step="1" @bind="_windSpeed" /> @_windSpeed</label>
+        </div>
+        <div>
+            <label>Particles: <input type="range" min="10" max="5000" step="10" @bind="_targetCount" /> @_targetCount</label>
+        </div>
+        <button @onclick="SpawnBodies" style="background: #4caf50;">Spawn</button>
+        <button @onclick="ClearAll" style="background: #dc3545;">Clear</button>
+        <button @onclick="ToggleWind" style="background: @(_windEnabled ? "#4caf50" : "#666");">Wind @(_windEnabled ? "ON" : "OFF")</button>
+        <button @onclick="StressTest" style="background: #ff9800;">💥 STRESS TEST (10k bodies)</button>
+        @if (Chaos.IsChaosModeEnabled)
+        {
+            <span style="color: #ff0;">🌀 CHAOS ACTIVE</span>
+        }
+    </div>
+
+    <!-- Canvas -->
+    <div style="flex: 1; position: relative;">
+        <canvas @ref="_canvas" width="1400" height="800" 
+                @onmousedown="OnMouseDown"
+                @onmousemove="OnMouseMove"
+                @onmouseup="OnMouseUp"
+                style="width:100%; height:100%; background: #0a0f1e; cursor: crosshair;">
+        </canvas>
+        <div style="position: absolute; top: 10px; right: 20px; color: white; background: rgba(0,0,0,0.7); padding: 10px;">
+            <div>FPS: @_fps</div>
+            <div>Bodies: @_bodies.Count</div>
+            <div>Avg Step: @_stepTime.ToString("F2") ms</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ElementReference _canvas;
+    private World _world;
+    private List<Body> _bodies = new();
+    private bool _isDrawing;
+    private Vector2 _lastMousePos;
+    private int _fps;
+    private double _stepTime;
+    private System.Threading.Timer _physicsTimer;
+    private Random _rand = new();
+
+    // User-adjustable parameters
+    private float _gravityX = 0;
+    private float _gravityY = 20f;
+    private float _friction = 0.5f;
+    private float _restitution = 0.3f;
+    private float _windSpeed = 5f;
+    private bool _windEnabled;
+    private int _targetCount = 100;
+
+    // Custom color struct (same as in CrusherSandbox)
+    private struct RgbColor
+    {
+        public byte R { get; set; }
+        public byte G { get; set; }
+        public byte B { get; set; }
+        public RgbColor(byte r, byte g, byte b) { R = r; G = g; B = b; }
+        public string ToHex() => $"#{R:X2}{G:X2}{B:X2}";
+    }
+
+    private class BodyData
+    {
+        public float Health { get; set; } = 100f;
+        public RgbColor Color { get; set; } = new RgbColor(255, 255, 255);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _world = new World(new Vector2(_gravityX, _gravityY));
+        // Add a ground plane
+        var ground = BodyFactory.CreateEdge(_world, new Vector2(0, 750), new Vector2(1400, 750));
+        ground.BodyType = BodyType.Static;
+        _physicsTimer = new System.Threading.Timer(async _ => await UpdatePhysics(), null, 0, 16);
+    }
+
+    private async Task UpdatePhysics()
+    {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+
+        // Update gravity (so changes take effect)
+        _world.Gravity = new Vector2(_gravityX, _gravityY);
+
+        // Step physics
+        _world.Step(1 / 60f);
+
+        // Apply wind force to all dynamic bodies
+        if (_windEnabled)
+        {
+            var windForce = new Vector2(_windSpeed * 10, 0);
+            foreach (var body in _bodies)
+            {
+                body.ApplyForce(windForce);
+            }
+        }
+
+        watch.Stop();
+        _stepTime = watch.Elapsed.TotalMilliseconds;
+        _fps = (int)(1000 / Math.Max(1, _stepTime));
+
+        await InvokeAsync(StateHasChanged);
+        await DrawCanvas();
+    }
+
+    private async Task DrawCanvas()
+    {
+        var bodies = _bodies.Select(b => new
+        {
+            position = new { x = b.Position.X, y = b.Position.Y },
+            rotation = b.Rotation,
+            radius = 5f, // all circles for simplicity
+            color = (b.UserData as BodyData)?.Color.ToHex() ?? "#ffffff"
+        }).ToList();
+
+        await JS.InvokeVoidAsync("physicsRenderer.draw", _canvas, bodies, _fps);
+    }
+
+    private void OnMouseDown(MouseEventArgs e)
+    {
+        _isDrawing = true;
+        _lastMousePos = new Vector2((int)e.OffsetX, (int)e.OffsetY);
+        SpawnBody(_lastMousePos);
+    }
+
+    private void OnMouseMove(MouseEventArgs e)
+    {
+        if (!_isDrawing) return;
+        var pos = new Vector2((int)e.OffsetX, (int)e.OffsetY);
+        if (Vector2.Distance(_lastMousePos, pos) > 10)
+        {
+            SpawnBody(pos);
+            _lastMousePos = pos;
+        }
+    }
+
+    private void OnMouseUp(MouseEventArgs e) => _isDrawing = false;
+
+    private void SpawnBody(Vector2 pos)
+    {
+        if (_bodies.Count >= 10000) return; // safety cap
+
+        var body = BodyFactory.CreateCircle(_world, 5, 1f, pos);
+        body.BodyType = BodyType.Dynamic;
+        body.Restitution = _restitution;
+        body.Friction = _friction;
+        body.UserData = new BodyData { Color = GetRandomColor() };
+        _bodies.Add(body);
+    }
+
+    private void SpawnBodies()
+    {
+        int toSpawn = _targetCount - _bodies.Count;
+        for (int i = 0; i < toSpawn; i++)
+        {
+            var pos = new Vector2(_rand.Next(100, 1300), _rand.Next(100, 600));
+            SpawnBody(pos);
+        }
+    }
+
+    private void ClearAll()
+    {
+        foreach (var body in _bodies) _world.RemoveBody(body);
+        _bodies.Clear();
+    }
+
+    private void ToggleWind() => _windEnabled = !_windEnabled;
+
+    private void StressTest()
+    {
+        ClearAll();
+        for (int i = 0; i < 10000; i++)
+        {
+            var pos = new Vector2(_rand.Next(100, 1300), _rand.Next(100, 600));
+            SpawnBody(pos);
+        }
+    }
+
+    private RgbColor GetRandomColor() => new RgbColor((byte)_rand.Next(256), (byte)_rand.Next(256), (byte)_rand.Next(256));
+
+    public void Dispose() => _physicsTimer?.Dispose();
+}

@@ -1,0 +1,247 @@
+@page "/blazor-game"
+@using MiniGames.CsLists
+@inject NavigationManager Navigation
+
+<PageTitle>Blazor Games Hub</PageTitle>
+
+<div class="blazor-games-container">
+    <!-- Hero Section (Featured Game) -->
+    @{
+        var featured = GameList.GetAllGames().FirstOrDefault(g => g.IsFeatured);
+        if (featured != null)
+        {
+            <div class="hero-section" style="background: linear-gradient(135deg, @featured.Color 0%, #1a1f2e 100%);">
+                <div class="hero-content">
+                    <div class="hero-icon">@featured.Icon</div>
+                    <h1 class="hero-title">@featured.Name</h1>
+                    <p class="hero-description">@featured.Description</p>
+                    <button class="hero-button" @onclick="() => Navigation.NavigateTo(featured.Route)">
+                        Play Now 🚀
+                    </button>
+                </div>
+                <div class="hero-particles"></div>
+            </div>
+        }
+    }
+
+    <!-- Game Grid -->
+    <div class="games-grid">
+        @foreach (var game in GameList.GetAllGames().Where(g => !g.IsFeatured))
+        {
+            <div class="game-card" style="--card-color: @game.Color;">
+                <div class="card-glow"></div>
+                <div class="card-content">
+                    <div class="card-icon">@game.Icon</div>
+                    <h3 class="card-title">@game.Name</h3>
+                    <p class="card-description">@game.Description</p>
+                    <button class="card-button" @onclick="() => Navigation.NavigateTo(game.Route)">
+                        Play
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .blazor-games-container {
+        min-height: 100vh;
+        background: #0a0f1e;
+        color: #fff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        height: 70vh;
+        min-height: 600px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        max-width: 800px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        background: rgba(255,255,255,0.05);
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.1);
+        animation: fadeInUp 1s ease;
+    }
+
+    .hero-icon {
+        font-size: 8rem;
+        line-height: 1;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 0 20px currentColor);
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #fff, #ddd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 30px rgba(255,255,255,0.3);
+    }
+
+    .hero-description {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+        line-height: 1.6;
+    }
+
+    .hero-button {
+        padding: 1rem 3rem;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border: none;
+        border-radius: 50px;
+        background: white;
+        color: #0a0f1e;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+
+    .hero-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(255,255,255,0.5);
+    }
+
+    .hero-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.2"><circle cx="10" cy="10" r="1" fill="white"/><circle cx="90" cy="30" r="1.5" fill="white"/><circle cx="50" cy="80" r="1" fill="white"/><circle cx="30" cy="60" r="2" fill="white"/><circle cx="70" cy="20" r="1.2" fill="white"/></svg>');
+        animation: particleMove 20s linear infinite;
+        z-index: 1;
+    }
+
+    /* Games Grid */
+    .games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 4rem 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .game-card {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        cursor: pointer;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.05);
+        backdrop-filter: blur(5px);
+    }
+
+    .game-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 0 2px var(--card-color);
+    }
+
+    .card-glow {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at 50% 0%, var(--card-color), transparent 70%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+    .game-card:hover .card-glow {
+        opacity: 0.2;
+    }
+
+    .card-content {
+        position: relative;
+        z-index: 2;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .card-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        filter: drop-shadow(0 0 10px var(--card-color));
+    }
+
+    .card-title {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--card-color);
+    }
+
+    .card-description {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .card-button {
+        padding: 0.6rem 2rem;
+        border: 2px solid var(--card-color);
+        background: transparent;
+        color: white;
+        border-radius: 30px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .card-button:hover {
+        background: var(--card-color);
+        color: #0a0f1e;
+    }
+
+    /* Animations */
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+    @@keyframes particleMove {
+        0% { background-position: 0 0; }
+        100% { background-position: 0 1000px; }
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .hero-title { font-size: 2.5rem; }
+        .hero-description { font-size: 1rem; }
+        .hero-icon { font-size: 5rem; }
+        .games-grid { grid-template-columns: 1fr; }
+    }
+</style>

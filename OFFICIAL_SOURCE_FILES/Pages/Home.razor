@@ -6,9 +6,14 @@
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
 
-<PageTitle>MiniGames</PageTitle>
+<PageTitle>MiniGames - Game Library</PageTitle>
 
-<h1 class="glitch @Chaos.GetRandomThemeClass()">MiniGames</h1>
+<h1 class="glitch @Chaos.GetRandomThemeClass()">Game Library</h1>
+
+<!-- Link to Blazor Games -->
+<div style="text-align: center; margin: 1rem 0;">
+    <a href="/blazor-game" class="blazor-link">🌊 Explore Blazor Games</a>
+</div>
 
 <div class="game-grid">
     @foreach (var game in games)
@@ -16,7 +21,29 @@
         <div class="game-card"
              @onmouseover="() => ShowPreview(game)"
              @onmouseleave="HidePreview">
-            <div class="preview-container">
+            
+            @* Cover Image or Placeholder *@
+            <div class="game-cover">
+                @if (!string.IsNullOrEmpty(game.CoverImage))
+                {
+                    <img src="@game.CoverImage" alt="@game.Name cover" />
+                }
+                else
+                {
+                    <div class="cover-placeholder" style="background-image: url('/images/cartridges/@(game.Folder).png')">
+                        <span>@game.Name.Substring(0, 1)</span>
+                    </div>
+                }
+                
+                @* Platform Badge *@
+                @if (!string.IsNullOrEmpty(game.Platform))
+                {
+                    <span class="platform-badge">@game.Platform</span>
+                }
+            </div>
+
+            @* Preview Container (shown on hover) *@
+            <div class="preview-container @(previewGame == game ? "visible" : "")">
                 @if (previewGame == game)
                 {
                     <ComputerEmulator GameUrl="@game.GamePath" />
@@ -24,13 +51,68 @@
                 else
                 {
                     <div class="preview-placeholder">
-                        <span>@game.Name</span>
+                        <span>Hover to play</span>
                     </div>
                 }
             </div>
+
+            @* Game Info *@
             <div class="game-info">
                 <h3>@game.Name</h3>
-                <button @onclick="() => InstallGame(game)">Install</button>
+                
+                @* Developer/Publisher *@
+                <div class="game-meta">
+                    @if (!string.IsNullOrEmpty(game.Developer))
+                    {
+                        <span class="developer">@game.Developer</span>
+                    }
+                    @if (!string.IsNullOrEmpty(game.Publisher) && game.Publisher != game.Developer)
+                    {
+                        <span class="publisher">/ @game.Publisher</span>
+                    }
+                </div>
+
+                @* Release Year & Genre *@
+                <div class="game-details">
+                    @if (game.ReleaseYear.HasValue)
+                    {
+                        <span class="year">@game.ReleaseYear</span>
+                    }
+                    @if (!string.IsNullOrEmpty(game.Genre))
+                    {
+                        <span class="genre">@game.Genre</span>
+                    }
+                    @if (!string.IsNullOrEmpty(game.RomType))
+                    {
+                        <span class="rom-type">@game.RomType.ToUpperInvariant()</span>
+                    }
+                </div>
+
+                @* Description (truncated) *@
+                @if (!string.IsNullOrEmpty(game.Description))
+                {
+                    <p class="game-description">@TruncateDescription(game.Description)</p>
+                }
+
+                @* Tags *@
+                @if (game.Tags != null && game.Tags.Any())
+                {
+                    <div class="game-tags">
+                        @foreach (var tag in game.Tags.Take(3))
+                        {
+                            <span class="tag">@tag</span>
+                        }
+                        @if (game.Tags.Count > 3)
+                        {
+                            <span class="tag more">+@(game.Tags.Count - 3)</span>
+                        }
+                    </div>
+                }
+
+                @* Install Button *@
+                <button class="install-btn" @onclick="() => InstallGame(game)">
+                    🎮 Play Now
+                </button>
             </div>
         </div>
     }
@@ -66,4 +148,250 @@
     {
         Navigation.NavigateTo($"/game/{game.Folder}");
     }
+
+    private string TruncateDescription(string description, int maxLength = 100)
+    {
+        if (string.IsNullOrEmpty(description) || description.Length <= maxLength)
+            return description;
+        
+        return description.Substring(0, maxLength) + "...";
+    }
 }
+
+<style>
+    .game-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 2rem;
+    }
+
+    .game-card {
+        background: rgba(26, 26, 46, 0.9);
+        border: 2px solid #4a4a6a;
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+        backdrop-filter: blur(5px);
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+    }
+
+    .game-card:hover {
+        transform: translateY(-5px);
+        border-color: #0ff;
+        box-shadow: 0 0 30px #0ff, inset 0 0 20px rgba(0, 255, 255, 0.3);
+    }
+
+    .game-cover {
+        position: relative;
+        width: 100%;
+        height: 150px;
+        overflow: hidden;
+        background: #0a0a1a;
+    }
+
+    .game-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .cover-placeholder {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: bold;
+        color: #0ff;
+        text-shadow: 2px 2px 0 #f0f;
+        background-color: #1a1a2e;
+    }
+
+    .platform-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 255, 255, 0.9);
+        color: #000;
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        box-shadow: 0 0 10px #0ff;
+    }
+
+    .preview-container {
+        width: 100%;
+        height: 200px;
+        background: #000;
+        border-bottom: 2px solid #4a4a6a;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .preview-container.visible {
+        opacity: 1;
+    }
+
+    .preview-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0a0a1a;
+        color: #4a4a6a;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+    }
+
+    .game-info {
+        padding: 1.5rem;
+    }
+
+    .game-info h3 {
+        margin: 0 0 0.5rem 0;
+        color: #0ff;
+        font-size: 1.5rem;
+        text-shadow: 0 0 10px #0ff;
+    }
+
+    .game-meta {
+        font-size: 0.9rem;
+        color: #8ff;
+        margin-bottom: 0.5rem;
+    }
+
+    .game-details {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .year, .genre, .rom-type {
+        background: rgba(255, 0, 255, 0.2);
+        padding: 2px 8px;
+        border-radius: 15px;
+        border: 1px solid #f0f;
+        color: #f0f;
+    }
+
+    .game-description {
+        font-size: 0.9rem;
+        color: #ccc;
+        margin: 0.5rem 0;
+        line-height: 1.4;
+    }
+
+    .game-tags {
+        display: flex;
+        gap: 0.3rem;
+        flex-wrap: wrap;
+        margin: 0.5rem 0;
+    }
+
+    .tag {
+        background: rgba(0, 255, 255, 0.1);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        border: 1px solid #0ff;
+        color: #0ff;
+    }
+
+    .tag.more {
+        background: rgba(255, 0, 255, 0.1);
+        border-color: #f0f;
+        color: #f0f;
+    }
+
+    .install-btn {
+        width: 100%;
+        padding: 0.8rem;
+        margin-top: 1rem;
+        background: linear-gradient(45deg, #2a2a4a, #1a1a3a);
+        border: 2px solid #0ff;
+        color: #0ff;
+        font-size: 1.1rem;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .install-btn:hover {
+        background: #0ff;
+        color: #000;
+        box-shadow: 0 0 30px #0ff;
+        transform: scale(1.05);
+    }
+
+    .support-footer {
+        margin-top: 4rem;
+        padding: 2rem;
+        text-align: center;
+        border-top: 2px solid #4a4a6a;
+    }
+
+    .support-footer h4 {
+        color: #0ff;
+        margin-bottom: 1rem;
+    }
+
+    .support-links {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .support-links a {
+        color: #8ff;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border: 1px solid #4a4a6a;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .support-links a:hover {
+        border-color: #0ff;
+        color: #0ff;
+        box-shadow: 0 0 15px #0ff;
+    }
+
+    /* New Blazor link style */
+    .blazor-link {
+        display: inline-block;
+        padding: 1rem 2rem;
+        background: linear-gradient(45deg, #2a2a4a, #1a1a3a);
+        border: 2px solid #0ff;
+        color: #0ff;
+        font-size: 1.3rem;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 40px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        box-shadow: 0 0 20px rgba(0,255,255,0.2);
+    }
+    .blazor-link:hover {
+        background: #0ff;
+        color: #000;
+        box-shadow: 0 0 30px #0ff;
+        transform: scale(1.05);
+    }
+</style>
