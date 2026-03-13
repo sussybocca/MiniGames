@@ -46,8 +46,10 @@
     private bool _running;
     private string? _statusMessage;
     private BlazorDisplay _display = new();
+    private BlazorController _controller = new();
     private TaskCompletionSource<byte[]>? _frameTcs;
 
+    // ----- BlazorDisplay: Implements IDisplay for coreboy -----
     private class BlazorDisplay : IDisplay
     {
         private readonly int[] _frameBuffer = new int[160 * 144];
@@ -55,6 +57,9 @@
         private int _pixelIndex = 0;
         private bool _enabled = true;
         private byte[]? _lastFrameData;
+
+        // DMG palette (4 shades of gray) – for correct color conversion
+        private static readonly int[] DmgPalette = { 0xFFFFFFFF, 0xFFAAAAAA, 0xFF555555, 0xFF000000 };
 
         public bool Enabled
         {
@@ -64,23 +69,28 @@
 
         public event FrameProducedEventHandler? OnFrameProduced;
 
-        public void Run(CancellationToken token) { } // Not used
+        public void Run(CancellationToken token) { } // Not used in this context
 
-        public void PutDmgPixel(int color)
+        public void PutDmgPixel(int colorIndex)
         {
             lock (_lock)
             {
                 if (_pixelIndex < _frameBuffer.Length)
-                    _frameBuffer[_pixelIndex++] = color;
+                    _frameBuffer[_pixelIndex++] = DmgPalette[colorIndex & 0x3]; // Convert index to ARGB
             }
         }
 
-        public void PutColorPixel(int color)
+        public void PutColorPixel(int gbcRgb)
         {
+            // GBC 15-bit RGB (0-31 each) -> ARGB
+            int r = (gbcRgb >> 0) & 0x1F;
+            int g = (gbcRgb >> 5) & 0x1F;
+            int b = (gbcRgb >> 10) & 0x1F;
+            int argb = 0xFF000000 | (r << 19) | (g << 11) | (b << 3); // Approximate conversion
             lock (_lock)
             {
                 if (_pixelIndex < _frameBuffer.Length)
-                    _frameBuffer[_pixelIndex++] = color;
+                    _frameBuffer[_pixelIndex++] = argb;
             }
         }
 
@@ -92,10 +102,10 @@
                 for (int i = 0; i < _frameBuffer.Length; i++)
                 {
                     int argb = _frameBuffer[i];
-                    rgba[i * 4] = (byte)((argb >> 16) & 0xFF);
-                    rgba[i * 4 + 1] = (byte)((argb >> 8) & 0xFF);
-                    rgba[i * 4 + 2] = (byte)(argb & 0xFF);
-                    rgba[i * 4 + 3] = (byte)((argb >> 24) & 0xFF);
+                    rgba[i * 4] = (byte)((argb >> 16) & 0xFF); // R
+                    rgba[i * 4 + 1] = (byte)((argb >> 8) & 0xFF); // G
+                    rgba[i * 4 + 2] = (byte)(argb & 0xFF); // B
+                    rgba[i * 4 + 3] = (byte)((argb >> 24) & 0xFF); // A
                 }
                 _lastFrameData = rgba;
                 _pixelIndex = 0;
@@ -103,7 +113,7 @@
             OnFrameProduced?.Invoke(this, _lastFrameData ?? Array.Empty<byte>());
         }
 
-        public void WaitForRefresh() { }
+        public void WaitForRefresh() { } // Non‑blocking; emulator runs as fast as possible
 
         public byte[]? GetLastFrameData()
         {
@@ -111,6 +121,28 @@
         }
     }
 
+    // ----- BlazorController: Implements IController for coreboy -----
+    private class BlazorController : IController
+    {
+        private IButtonListener? _listener;
+
+        public void SetButtonListener(IButtonListener listener)
+        {
+            _listener = listener;
+        }
+
+        public void PressButton(Button button)
+        {
+            _listener?.OnButtonPress(button);
+        }
+
+        public void ReleaseButton(Button button)
+        {
+            _listener?.OnButtonRelease(button);
+        }
+    }
+
+    // ----- Lifecycle -----
     protected override async Task OnInitializedAsync()
     {
         if (string.IsNullOrEmpty(gamePath))
@@ -129,9 +161,7 @@
 
         try
         {
-            // If the path is a virtual path (e.g., in Blazor Server), you may need to map to physical.
-            // For now, assume it's a physical file path.
-            StartEmulator(game.GamePath);
+            await StartEmulatorAsync(game.GamePath);
         }
         catch (Exception ex)
         {
@@ -139,24 +169,39 @@
         }
     }
 
-    private void StartEmulator(string romPath)
+    private async Task StartEmulatorAsync(string romPath)
     {
-        // Create options and set the ROM file path
-        var options = new GameboyOptions { Rom = romPath };
-        var cartridge = new Cartridge(options);
-        var controller = new NullController();
+        // For Blazor WebAssembly, you need to fetch the ROM as bytes.
+        // Adjust the URL to where your ROMs are stored (e.g., "roms/tetris.gb").
+        var romBytes = await Http.GetByteArrayAsync(romPath);
+
+        // Create cartridge from bytes (requires a Cartridge constructor that accepts byte[]).
+        // If your coreboy-net8 version doesn't have it, you'll need to add it (see notes).
+        var cartridge = new Cartridge(romBytes);
+
         var soundOutput = new NullSoundOutput();
         var serialEndpoint = new NullSerialEndpoint();
 
-        _gameboy = new Gameboy(options, cartridge, _display, controller, soundOutput, serialEndpoint);
+        _gameboy = new Gameboy(new GameboyOptions(), cartridge, _display, _controller, soundOutput, serialEndpoint);
 
         _cts = new CancellationTokenSource();
         _running = true;
 
         _display.OnFrameProduced += OnFrameProduced;
 
-        // Start emulation on a background thread
-        _ = Task.Run(() => _gameboy.Run(_cts.Token), _cts.Token);
+        // Run emulation on background thread
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                Console.WriteLine("Emulator thread started.");
+                _gameboy.Run(_cts.Token);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Emulator thread error: {ex}");
+            }
+        }, _cts.Token);
 
         // Start rendering loop on UI thread
         _ = RenderLoop(_cts.Token);
@@ -174,20 +219,43 @@
             _frameTcs = new TaskCompletionSource<byte[]>();
             var frameData = await _frameTcs.Task;
             await RenderFrame(frameData);
-            await Task.Delay(16, token); // ~60 fps throttle
         }
     }
 
     private async Task RenderFrame(byte[] rgba)
     {
-        await JS.InvokeVoidAsync("gameboy3.render", _canvas, rgba);
+        try
+        {
+            await JS.InvokeVoidAsync("gameboy3.render", _canvas, rgba);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Render error: {ex}");
+        }
     }
 
     private void SendKey(string key, bool pressed)
     {
-        // TODO: Implement input forwarding to the emulator.
-        // This will require a custom IController implementation.
-        Console.WriteLine($"Key {key} {pressed}");
+        Button? button = key.ToLower() switch
+        {
+            "up" => Button.Up,
+            "down" => Button.Down,
+            "left" => Button.Left,
+            "right" => Button.Right,
+            "a" => Button.A,
+            "b" => Button.B,
+            "select" => Button.Select,
+            "start" => Button.Start,
+            _ => null
+        };
+
+        if (button != null)
+        {
+            if (pressed)
+                _controller.PressButton(button);
+            else
+                _controller.ReleaseButton(button);
+        }
     }
 
     public void Dispose()
