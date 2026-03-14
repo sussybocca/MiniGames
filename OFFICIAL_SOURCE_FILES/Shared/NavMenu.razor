@@ -1,4 +1,19 @@
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IDisposable
+
+<!-- Mode Toggle Buttons -->
+<div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; gap: 10px;">
+    <button @onclick="ToggleHandMode" style="padding: 12px 20px; background: @(_handMode ? "#4CAF50" : "#f44336"); color: white; border: none; border-radius: 50px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s;">
+        <span style="margin-right: 8px;">🖐️</span> Hand: @(_handMode ? "ON" : "OFF")
+    </button>
+    <button @onclick="ToggleBluetoothMode" style="padding: 12px 20px; background: @(_bluetoothMode ? "#4CAF50" : "#f44336"); color: white; border: none; border-radius: 50px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s;">
+        <span style="margin-right: 8px;">🎧</span> Bluetooth: @(_bluetoothMode ? "ON" : "OFF")
+    </button>
+</div>
+
+<!-- Hidden canvas for hand tracking overlay (only visible when hand mode is active) -->
+<canvas id="handCanvas" style="display: @(_handMode ? "block" : "none"); position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; background: transparent;"></canvas>
 
 <div class="nav-menu">
     <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
@@ -54,9 +69,7 @@
         }
     </div>
 
-    
-
-    <!-- GameBoy 3 Section (New) -->
+    <!-- GameBoy 3 Section -->
     <div class="nav-section">
         <div class="nav-section-header" @onclick='() => ToggleSection("gameboy3")'>
             <span>🎮 GameBoy 3</span>
@@ -70,7 +83,7 @@
         }
     </div>
 
-    <!-- Universal Modder Section (New) -->
+    <!-- Universal Modder Section -->
     <div class="nav-section">
         <div class="nav-section-header" @onclick='() => ToggleSection("universalModder")'>
             <span>🛠️ Universal Modder</span>
@@ -83,8 +96,8 @@
             </div>
         }
     </div>
-   
-    <!-- Three.js Examples Section (New) -->
+
+    <!-- Three.js Examples Section -->
     <div class="nav-section">
         <div class="nav-section-header" @onclick='() => ToggleSection("three")'>
             <span>🎨 Three.js Examples</span>
@@ -94,6 +107,21 @@
         {
             <div class="nav-submenu">
                 <NavLink class="nav-link sub" href="/three">View Gallery</NavLink>
+            </div>
+        }
+    </div>
+
+    <!-- Hand Navigation Section (NEW) -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("handNav")'>
+            <span>🖐️ Hand Navigation</span>
+            <span class="toggle-icon">@GetIcon(_handNavOpen)</span>
+        </div>
+        @if (_handNavOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" href="/hand-nav">Gesture Art</NavLink>
+                <NavLink class="nav-link sub" href="/hand-control">Control Menu</NavLink>
             </div>
         }
     </div>
@@ -182,8 +210,6 @@
         }
     </div>
 
-   
-
     <!-- Chaos Test Section -->
     <div class="nav-section">
         <div class="nav-section-header" @onclick='() => ToggleSection("chaosTest")'>
@@ -204,9 +230,10 @@
     private bool _mobileOpen = false;
     private bool _computerOpen = false;
     private bool _gbOpen = false;
-    private bool _gameboy3Open = false; // New
-    private bool _universalModderOpen = false; // New
-    private bool _threeOpen = false; // New Three.js section
+    private bool _gameboy3Open = false;
+    private bool _universalModderOpen = false;
+    private bool _threeOpen = false;
+    private bool _handNavOpen = false;
     private bool _atariOpen = false;
     private bool _pspOpen = false;
     private bool _pcOpen = false;
@@ -218,6 +245,45 @@
     private bool _gb2Open = false;
     private bool _chaosTestOpen = false;
 
+    private bool _handMode = false;
+    private bool _bluetoothMode = false;
+    private DotNetObjectReference<NavMenu>? _dotNetRef;
+
+    protected override void OnInitialized()
+    {
+        _dotNetRef = DotNetObjectReference.Create(this);
+    }
+
+    private async void ToggleHandMode()
+    {
+        _handMode = !_handMode;
+        StateHasChanged();
+
+        if (_handMode)
+        {
+            await JS.InvokeVoidAsync("enableHandTracking", _dotNetRef);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("disableHandTracking");
+        }
+    }
+
+    private async void ToggleBluetoothMode()
+    {
+        _bluetoothMode = !_bluetoothMode;
+        StateHasChanged();
+
+        if (_bluetoothMode)
+        {
+            await JS.InvokeVoidAsync("enableBluetoothMode", _dotNetRef);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("disableBluetoothMode");
+        }
+    }
+
     private void ToggleSection(string section)
     {
         switch (section)
@@ -225,19 +291,314 @@
             case "ds": _dsOpen = !_dsOpen; break;
             case "mobile": _mobileOpen = !_mobileOpen; break;
             case "computer": _computerOpen = !_computerOpen; break;
-            
-            case "gameboy3": _gameboy3Open = !_gameboy3Open; break; // New
-            case "universalModder": _universalModderOpen = !_universalModderOpen; break; // New
-            case "three": _threeOpen = !_threeOpen; break; // New
-           
+            case "gameboy3": _gameboy3Open = !_gameboy3Open; break;
+            case "universalModder": _universalModderOpen = !_universalModderOpen; break;
+            case "three": _threeOpen = !_threeOpen; break;
+            case "handNav": _handNavOpen = !_handNavOpen; break;
             case "pc": _pcOpen = !_pcOpen; break;
             case "nds2": _nds2Open = !_nds2Open; break;
             case "ds3": _ds3Open = !_ds3Open; break;
             case "jsonService": _jsonServiceOpen = !_jsonServiceOpen; break;
             case "trippy": _trippyOpen = !_trippyOpen; break;
             case "tv": _tvOpen = !_tvOpen; break;
-           
             case "chaosTest": _chaosTestOpen = !_chaosTestOpen; break;
         }
     }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
 }
+
+<style>
+    .hand-hover {
+        outline: 3px solid #4CAF50 !important;
+        box-shadow: 0 0 20px #4CAF50 !important;
+        transition: all 0.2s ease;
+        background-color: rgba(76, 175, 80, 0.2) !important;
+    }
+    .bt-focus {
+        outline: 3px solid #2196F3 !important;
+        box-shadow: 0 0 20px #2196F3 !important;
+        transition: all 0.2s ease;
+        background-color: rgba(33, 150, 243, 0.2) !important;
+    }
+</style>
+
+<script>
+    // ===== HAND TRACKING (unchanged) =====
+    let handTrackingActive = false;
+    let canvas, ctx;
+    let camera = null;
+    let hands = null;
+    let dotNetRef = null;
+    let lastPinchTime = 0;
+    const pinchCooldown = 500; // ms between clicks
+
+    function getDistance(p1, p2) {
+        return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+    }
+
+    async function loadMediaPipe() {
+        return new Promise((resolve, reject) => {
+            if (window.Hands) {
+                resolve();
+                return;
+            }
+            const script1 = document.createElement('script');
+            script1.src = 'https://cdn.jsdelivr.net/npm/@@mediapipe/hands/hands.js';
+            script1.onload = () => {
+                const script2 = document.createElement('script');
+                script2.src = 'https://cdn.jsdelivr.net/npm/@@mediapipe/camera_utils/camera_utils.js';
+                script2.onload = resolve;
+                script2.onerror = reject;
+                document.head.appendChild(script2);
+            };
+            script1.onerror = reject;
+            document.head.appendChild(script1);
+        });
+    }
+
+    window.enableHandTracking = async (dotNetObj) => {
+        if (handTrackingActive) return;
+        dotNetRef = dotNetObj;
+
+        await loadMediaPipe();
+
+        canvas = document.getElementById('handCanvas');
+        ctx = canvas.getContext('2d');
+        canvas.style.display = 'block';
+        handTrackingActive = true;
+
+        const videoElement = document.createElement('video');
+        videoElement.style.display = 'none';
+        document.body.appendChild(videoElement);
+
+        hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@@mediapipe/hands/${file}` });
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        hands.onResults((results) => {
+            if (!handTrackingActive) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                // Index finger tip (landmark 8)
+                const indexTip = landmarks[8];
+                const x = indexTip.x * canvas.width;
+                const y = indexTip.y * canvas.height;
+
+                // Draw cursor with effects
+                ctx.shadowColor = '#4CAF50';
+                ctx.shadowBlur = 30;
+                ctx.beginPath();
+                ctx.arc(x, y, 25, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(76, 175, 80, 0.3)';
+                ctx.fill();
+                ctx.shadowBlur = 15;
+                ctx.strokeStyle = '#4CAF50';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = '#4CAF50';
+                ctx.fill();
+
+                // Remove previous highlights
+                document.querySelectorAll('.nav-link.hand-hover').forEach(el => {
+                    el.classList.remove('hand-hover');
+                });
+
+                // Find element under finger
+                const element = document.elementFromPoint(x, y);
+                let hoveredNavLink = null;
+                if (element) {
+                    const navLink = element.closest('.nav-link');
+                    if (navLink) {
+                        navLink.classList.add('hand-hover');
+                        hoveredNavLink = navLink;
+                    }
+                }
+
+                // Pinch detection (thumb tip = landmark 4)
+                const thumbTip = landmarks[4];
+                const pinchDist = getDistance(
+                    { x: thumbTip.x * canvas.width, y: thumbTip.y * canvas.height },
+                    { x, y }
+                );
+                const now = Date.now();
+                if (pinchDist < 30 && now - lastPinchTime > pinchCooldown) {
+                    lastPinchTime = now;
+                    if (hoveredNavLink) {
+                        hoveredNavLink.click(); // simulate click
+                    }
+                }
+            } else {
+                // No hand – remove highlights
+                document.querySelectorAll('.nav-link.hand-hover').forEach(el => {
+                    el.classList.remove('hand-hover');
+                });
+            }
+        });
+
+        camera = new Camera(videoElement, {
+            onFrame: async () => {
+                if (handTrackingActive) {
+                    await hands.send({ image: videoElement });
+                }
+            },
+            width: 640,
+            height: 480
+        });
+        camera.start();
+    };
+
+    window.disableHandTracking = () => {
+        handTrackingActive = false;
+        if (canvas) canvas.style.display = 'none';
+        if (camera) camera.stop();
+        if (hands) hands.close();
+        document.querySelectorAll('.nav-link.hand-hover').forEach(el => {
+            el.classList.remove('hand-hover');
+        });
+    };
+
+    // ===== BLUETOOTH HEADPHONE CONTROL =====
+    let bluetoothActive = false;
+    let btNavLinks = [];
+    let btCurrentIndex = -1; // -1 means none focused
+
+    // Function to update focus based on current index
+    function updateBtFocus() {
+        // Remove focus from all
+        document.querySelectorAll('.nav-link.bt-focus').forEach(el => el.classList.remove('bt-focus'));
+        if (btCurrentIndex >= 0 && btCurrentIndex < btNavLinks.length) {
+            btNavLinks[btCurrentIndex].classList.add('bt-focus');
+            // Optionally scroll into view
+            btNavLinks[btCurrentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    }
+
+    // Collect all nav links (including submenu items)
+    function refreshNavLinks() {
+        btNavLinks = Array.from(document.querySelectorAll('.nav-link'));
+        // Remove focus if current index is out of bounds
+        if (btCurrentIndex >= btNavLinks.length) btCurrentIndex = -1;
+        updateBtFocus();
+    }
+
+    window.enableBluetoothMode = (dotNetObj) => {
+        if (bluetoothActive) return;
+        bluetoothActive = true;
+        dotNetRef = dotNetObj;
+
+        // Initial collection of nav links
+        refreshNavLinks();
+
+        // Start listening to media key events
+        window.addEventListener('keydown', handleMediaKey);
+    };
+
+    window.disableBluetoothMode = () => {
+        bluetoothActive = false;
+        window.removeEventListener('keydown', handleMediaKey);
+        // Remove focus
+        document.querySelectorAll('.nav-link.bt-focus').forEach(el => el.classList.remove('bt-focus'));
+    };
+
+    function handleMediaKey(e) {
+        if (!bluetoothActive) return;
+
+        // Prevent default browser actions for these keys (so they don't also control volume/media)
+        e.preventDefault();
+
+        // Map key codes
+        switch (e.code) {
+            case 'VolumeUp':
+                // Move focus to next link
+                if (btNavLinks.length === 0) break;
+                btCurrentIndex = (btCurrentIndex + 1) % btNavLinks.length;
+                updateBtFocus();
+                break;
+            case 'VolumeDown':
+                // Move focus to previous link
+                if (btNavLinks.length === 0) break;
+                btCurrentIndex = (btCurrentIndex - 1 + btNavLinks.length) % btNavLinks.length;
+                updateBtFocus();
+                break;
+            case 'MediaPlayPause':
+                // Click the currently focused link
+                if (btCurrentIndex >= 0 && btCurrentIndex < btNavLinks.length) {
+                    btNavLinks[btCurrentIndex].click();
+                }
+                break;
+            case 'MediaTrackNext':
+                // Scroll down a bit
+                window.scrollBy({ top: 100, behavior: 'smooth' });
+                break;
+            case 'MediaTrackPrevious':
+                // Scroll up a bit
+                window.scrollBy({ top: -100, behavior: 'smooth' });
+                break;
+        }
+    }
+
+    // Re‑scan nav links if the menu structure changes (e.g., sections expanded/collapsed)
+    // We can call refreshNavLinks() from Blazor when toggling sections.
+    // But for simplicity, we'll just refresh on each key press.
+    // In handleMediaKey, we can call refreshNavLinks() before using btNavLinks.
+    // I'll modify handleMediaKey to refresh first.
+
+    // Updated handler to refresh before acting
+    window.handleMediaKey = (e) => {
+        if (!bluetoothActive) return;
+        e.preventDefault();
+
+        // Refresh list of nav links (in case sections expanded/collapsed)
+        btNavLinks = Array.from(document.querySelectorAll('.nav-link'));
+
+        switch (e.code) {
+            case 'VolumeUp':
+                if (btNavLinks.length === 0) break;
+                btCurrentIndex = (btCurrentIndex + 1) % btNavLinks.length;
+                updateBtFocus();
+                break;
+            case 'VolumeDown':
+                if (btNavLinks.length === 0) break;
+                btCurrentIndex = (btCurrentIndex - 1 + btNavLinks.length) % btNavLinks.length;
+                updateBtFocus();
+                break;
+            case 'MediaPlayPause':
+                if (btCurrentIndex >= 0 && btCurrentIndex < btNavLinks.length) {
+                    btNavLinks[btCurrentIndex].click();
+                }
+                break;
+            case 'MediaTrackNext':
+                window.scrollBy({ top: 100, behavior: 'smooth' });
+                break;
+            case 'MediaTrackPrevious':
+                window.scrollBy({ top: -100, behavior: 'smooth' });
+                break;
+        }
+    };
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (camera) camera.stop();
+        if (hands) hands.close();
+        if (bluetoothActive) {
+            window.removeEventListener('keydown', handleMediaKey);
+        }
+    });
+</script>
