@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "MiniGames",
   "resources": {
-    "hash": "sha256-ec+CGOKYKVaoERIQVHNl3prdodKOP4UGQ5QgnrFQ34A=",
+    "hash": "sha256-4BVf/Ld5TGzLrVq+63cW0KHEMsR+Kf7Zffg1bJduR10=",
     "jsModuleNative": {
       "dotnet.native.js": "sha256-4g0GzvOXSwZvTLca4PrWJkoeltz+V9IF/hEFDcnVros="
     },
@@ -36,10 +36,10 @@
       "Microsoft.Extensions.Logging.dll": "sha256-rOqSoE+fOiZaB2T8skBJkD9bc/Y1lrrgTEqs9aEKn5M=",
       "Microsoft.Extensions.Options.dll": "sha256-f4aENQgrev7SYPFrGmMs10QGEHZoijHQdAHAKKltpNw=",
       "Microsoft.Extensions.Primitives.dll": "sha256-Zdz/nYZqBxfpd2lmuYLL+CUF5Z+Y4clXKhD2UAqYV7Y=",
-      "Microsoft.JSInterop.dll": "sha256-3exYDl0rjh57TjNeORHFOLBCvGPv6/JR5tgGuto3es4=",
+      "Microsoft.JSInterop.dll": "sha256-8ijGKboNcAUJGWnv+aL1Z2IjgPdqiiHGkKiOlTHzy2o=",
       "Microsoft.JSInterop.WebAssembly.dll": "sha256-oL/28/W/WGVbwsKDjfhqSn22/E+ixn+BqIUlrZUs2uc=",
       "Microsoft.Win32.Registry.dll": "sha256-tlvP+v23/f2el5/dDQE1COwQo4jveAaqeZ/f4Q/MbFE=",
-      "MiniGames.dll": "sha256-Jc0Oo6V1Ph8jwStIMK7lrBG+zqXZWZWTZh5Go9+dKvU=",
+      "MiniGames.dll": "sha256-u5HsEEfXhww8ci3zJLS1WiMzRQtw2FgJ6R1cbSve56s=",
       "MoonSharp.Interpreter.dll": "sha256-0cr4waHNdmm3SdTKzdqI6UnVE4uG6Kw/c5Q6vr1ufhg=",
       "NAudio.Asio.dll": "sha256-ygN4AhcTmzf39baSHVne+40kmIMVsWsWenf6iMqn0A8=",
       "NAudio.Core.dll": "sha256-/PST/Eei9HimUwOIa5dfvb9xTLsfLXn3/Ol+S7FrAag=",
@@ -82,7 +82,7 @@
       "System.Net.Primitives.dll": "sha256-x/hh5p+f+FoH8T/cOkRTSZKbqitAegSPF4oKt21Pfzc=",
       "System.ObjectModel.dll": "sha256-hoRC/hct+jgHOt5qGi2hgHl/1SxDzNeutR+HpjA0BrQ=",
       "System.Private.CoreLib.dll": "sha256-qw60ivpemvTEt/xAkjTes9X88KpDE6dSnwWpXM79Y3g=",
-      "System.Private.Uri.dll": "sha256-k2D/k3FOSt/jh3qMk3Tz3ptJF/NCA2CyIDFy5URYmWQ=",
+      "System.Private.Uri.dll": "sha256-sAuaX+4yQaL1RZ3/dov9062y6Nn4zN0OtUYEL92VXfY=",
       "System.Private.Xml.dll": "sha256-pwP06V60X9hB6glBqR+2XaLyBCOb+XpNGyCQFE/xVZk=",
       "System.Private.Xml.Linq.dll": "sha256-FTzi2nD+ku97TiF1IJbiKW39PVWgRP4IfVfiBK4jaUM=",
       "System.Reflection.dll": "sha256-/tWQKGoziHHUCTMaCTxaD+P38uj6dLGe7npuzWITHpg=",
@@ -115,6 +115,7 @@
       "System.Xml.ReaderWriter.dll": "sha256-71RjbfvBBBMT2rEVRSqf573VjvPNqA+sAcyABIwNSdA=",
       "System.Xml.XDocument.dll": "sha256-+BVVqu+MPRNWMPtYvsZxqYgsdA5cc0VeIV3BalZsXNI=",
       "System.Xml.XPath.XDocument.dll": "sha256-OeCs1gfKu2Nxl/UAwNW9/tvZlu+CZUpyNf8f+vl4UIo=",
+      "Toolbelt.Blazor.Gamepad.dll": "sha256-kSyxAxpo8+H6EGrJ9XIou03aiULMkk0/Z8iqfMP/8j8=",
       "VelcroPhysics.dll": "sha256-SnpeVFtu5ieJJk9OO7wu1E7thoAAowLAZTIG1C2c0hk="
     },
     "satelliteResources": {
@@ -170,6 +171,12 @@
         "Microsoft.CodeAnalysis.CSharp.resources.dll": "sha256-1u5wuVDp8cxpkqi6S/78yFv1jwOK29uubRb2HpFAkcs=",
         "Microsoft.CodeAnalysis.resources.dll": "sha256-/tNh6jg0yCdZPbgGMbvchkY7tDMwieOzGQbb7tfVw8I="
       }
+    },
+    "libraryInitializers": {
+      "_content/Toolbelt.Blazor.GetProperty.Script/Toolbelt.Blazor.GetProperty.Script.9c7g4riq4n.lib.module.js": "sha256-Kfky1A8y9+ZwzlY43QWt+NQrv66OFcXP+yN4JDCOmuQ="
+    },
+    "modulesAfterConfigLoaded": {
+      "../_content/Toolbelt.Blazor.GetProperty.Script/Toolbelt.Blazor.GetProperty.Script.9c7g4riq4n.lib.module.js": "sha256-Kfky1A8y9+ZwzlY43QWt+NQrv66OFcXP+yN4JDCOmuQ="
     }
   },
   "cacheBootResources": true,

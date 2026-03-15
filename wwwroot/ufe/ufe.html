@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>UFE – Universal Frontend Emulator</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #0a0a0f;
+            color: #e0e0ff;
+            font-family: 'Segoe UI', 'Courier New', monospace;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error {
+            padding: 20px;
+            text-align: center;
+            color: #ff00ff;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+        .upload-panel {
+            background: #1a1a2e;
+            border: 2px solid #8a2be2;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(138, 43, 226, 0.5), inset 0 0 20px rgba(0,255,255,0.1);
+            text-align: center;
+            backdrop-filter: blur(5px);
+        }
+        .upload-panel h2 {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #8a2be2;
+            margin-top: 0;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            animation: titleGlitch 5s infinite;
+        }
+        @keyframes titleGlitch {
+            0%, 100% { transform: skew(0deg); }
+            95% { transform: skew(2deg); text-shadow: 2px 2px 0 #ff00ff, -2px -2px 0 #00ffff; }
+            96% { transform: skew(-2deg); text-shadow: -2px 2px 0 #00ffff, 2px -2px 0 #ff00ff; }
+            97% { transform: skew(0deg); }
+        }
+        .upload-panel p {
+            margin-bottom: 1.5rem;
+            opacity: 0.9;
+        }
+        .drop-zone {
+            border: 2px dashed #8a2be2;
+            border-radius: 30px;
+            padding: 2rem;
+            margin: 1rem 0;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: rgba(0,0,0,0.3);
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #00ffff;
+            box-shadow: 0 0 20px #00ffff;
+            background: rgba(138,43,226,0.2);
+        }
+        .drop-zone .icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 10px #8a2be2);
+        }
+        .file-info {
+            margin: 1rem 0;
+            padding: 0.5rem;
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            border-left: 4px solid #00ffff;
+        }
+        button {
+            background: linear-gradient(90deg, #00ffff, #8a2be2);
+            color: black;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px #00ffff;
+            margin-top: 1rem;
+            width: 100%;
+            max-width: 250px;
+        }
+        button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px #8a2be2, 0 0 25px #00ffff;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .system-selector {
+            margin: 1rem 0;
+        }
+        .system-selector label {
+            margin: 0 1rem;
+            cursor: pointer;
+        }
+        .system-selector input[type="radio"] {
+            accent-color: #8a2be2;
+            width: 1.2rem;
+            height: 1.2rem;
+            margin-right: 0.3rem;
+            filter: drop-shadow(0 0 5px #8a2be2);
+        }
+        .loading {
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const systemParam = urlParams.get('system'); // 'flash', 'gba', 'ps1'
+        const romParam = urlParams.get('rom');       // path to ROM file
+
+        // If both system and rom are provided, load directly
+        if (systemParam && romParam) {
+            loadEmulator(systemParam, romParam);
+        } else {
+            // Show upload interface
+            showUploadUI();
+        }
+
+        function showUploadUI() {
+            const container = document.getElementById('container');
+            container.innerHTML = `
+                <div class="upload-panel">
+                    <h2>🎮 UFE</h2>
+                    <p>Universal Frontend Emulator</p>
+                    <div class="system-selector">
+                        <label>
+                            <input type="radio" name="system" value="flash" checked> Flash
+                        </label>
+                        <label>
+                            <input type="radio" name="system" value="gba"> GBA
+                        </label>
+                        <label>
+                            <input type="radio" name="system" value="ps1"> PS1
+                        </label>
+                    </div>
+                    <div class="drop-zone" id="dropZone">
+                        <div class="icon">📂</div>
+                        <p>Drag & drop a ROM file here<br>or click to select</p>
+                    </div>
+                    <input type="file" id="fileInput" style="display: none;">
+                    <div id="fileInfo" class="file-info" style="display: none;"></div>
+                    <button id="playBtn" disabled>▶ Play</button>
+                </div>
+            `;
+
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const fileInfo = document.getElementById('fileInfo');
+            const playBtn = document.getElementById('playBtn');
+            const systemRadios = document.querySelectorAll('input[name="system"]');
+
+            let selectedFile = null;
+            let selectedSystem = 'flash'; // default
+
+            systemRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    selectedSystem = e.target.value;
+                });
+            });
+
+            // Click drop zone to open file dialog
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                handleFile(file);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                handleFile(file);
+            });
+
+            function handleFile(file) {
+                if (!file) return;
+                selectedFile = file;
+                fileInfo.style.display = 'block';
+                fileInfo.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                playBtn.disabled = false;
+            }
+
+            playBtn.addEventListener('click', () => {
+                if (!selectedFile) return;
+                const system = selectedSystem;
+                const url = URL.createObjectURL(selectedFile);
+                // Clear the UI and load the emulator
+                container.innerHTML = '<div id="container" style="width:100%;height:100%"></div>';
+                loadEmulator(system, url);
+            });
+        }
+
+        function loadEmulator(system, romPath) {
+            const container = document.getElementById('container');
+            container.innerHTML = ''; // clear any previous content
+
+            if (system === 'flash') {
+                loadRuffle(romPath);
+            } else if (system === 'gba' || system === 'ps1') {
+                loadEmulatorJS(system, romPath);
+            } else {
+                container.innerHTML = '<div class="error">Unsupported system.</div>';
+            }
+        }
+
+        function loadRuffle(romPath) {
+            const container = document.getElementById('container');
+            // Show loading indicator
+            container.innerHTML = '<div class="loading">Loading Ruffle...</div>';
+
+            const script = document.createElement('script');
+            script.src = '/ufe/ruffle/ruffle.js';
+            script.onload = () => {
+                container.innerHTML = ''; // remove loading
+                const ruffle = window.RufflePlayer.newest();
+                const player = ruffle.createPlayer();
+                player.id = 'ruffle-player';
+                player.style.width = '100%';
+                player.style.height = '100%';
+                container.appendChild(player);
+                player.load({ url: romPath });
+            };
+            script.onerror = () => {
+                container.innerHTML = '<div class="error">Failed to load Ruffle.</div>';
+            };
+            document.head.appendChild(script);
+        }
+
+        function loadEmulatorJS(system, romPath) {
+            const container = document.getElementById('container');
+            container.innerHTML = '<div class="loading">Loading EmulatorJS...</div>';
+
+            // Load EmulatorJS CSS
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = '/ufe/emulatorjs/data/emulator.css';
+            document.head.appendChild(link);
+
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            canvas.id = 'game-canvas';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            container.innerHTML = ''; // clear loading
+            container.appendChild(canvas);
+
+            // List of required scripts in order
+            const scripts = [
+                '/ufe/emulatorjs/data/src/nipplejs.js',
+                '/ufe/emulatorjs/data/src/gamepad.js',
+                '/ufe/emulatorjs/data/src/emulator.js'
+            ];
+
+            function loadNext(index) {
+                if (index >= scripts.length) {
+                    // All scripts loaded – initialize emulator
+                    const emulator = new EmulatorJS('#game-canvas', {
+                        system: system,
+                        bios: system === 'ps1' ? '/ufe/emulatorjs/data/ps1/bios.bin' : undefined,
+                        rom: romPath,
+                        onLoad: () => console.log('Emulator loaded'),
+                        onError: (err) => {
+                            console.error('Emulator error:', err);
+                            container.innerHTML = '<div class="error">Emulator error. Check console.</div>';
+                        }
+                    });
+                    emulator.start();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = scripts[index];
+                script.onload = () => loadNext(index + 1);
+                script.onerror = () => {
+                    container.innerHTML = `<div class="error">Failed to load ${scripts[index]}</div>`;
+                };
+                document.head.appendChild(script);
+            }
+
+            loadNext(0);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horse Adventure - 3D Experience</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            overflow-x: hidden;
+            height: 100vh;
+        }
+        .cursor3d {
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 
+                        0 0 30px rgba(255, 255, 255, 0.5), 
+                        0 0 45px rgba(255, 255, 255, 0.3);
+        }
+        
+        .cursor3d::after {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        body {
+            cursor: none;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+        
+        .content {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 2rem 5% 3rem 5%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8) 30%);
+            z-index: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            color: #4169E1; /* Royal blue color */
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 
+                0 1px 0 #ccc,
+                0 2px 0 #c9c9c9,
+                0 3px 0 #bbb,
+                0 4px 0 #b9b9b9,
+                0 5px 0 #aaa,
+                0 6px 1px rgba(0,0,0,.1),
+                0 0 5px rgba(0,0,0,.1),
+                0 1px 3px rgba(0,0,0,.3),
+                0 3px 5px rgba(0,0,0,.2),
+                0 5px 10px rgba(0,0,0,.25),
+                0 10px 10px rgba(0,0,0,.2),
+                0 20px 20px rgba(0,0,0,.15);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0px) rotate3d(1, 1, 1, 0deg);
+            }
+            50% {
+                transform: translateY(-10px) rotate3d(1, 1, 1, 2deg);
+            }
+            100% {
+                transform: translateY(0px) rotate3d(1, 1, 1, 0deg);
+            }
+        }
+        p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 1rem auto;
+        }
+        
+        .cta-button {
+            background: linear-gradient(45deg, #ff3e00, #ff8700);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(255, 62, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Horse Adventures</h1>
+        <p>Experience the beauty of nature with these magnificent creatures</p>
+        <button class="cta-button">Explore Now</button>
+    </div>
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

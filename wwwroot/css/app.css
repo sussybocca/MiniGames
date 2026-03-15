@@ -25,7 +25,6 @@ html, body {
     background-image: radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.1) 0%, transparent 30%),
                       radial-gradient(circle at 90% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 30%);
     animation: backgroundPulse 10s infinite alternate;
-    -webkit-tap-highlight-color: transparent; /* remove tap highlight on mobile */
 }
 
 @keyframes backgroundPulse {
@@ -39,7 +38,6 @@ html, body {
     backdrop-filter: blur(2px);
 }
 
-/* ===== SIDEBAR – RESPONSIVE ===== */
 .sidebar {
     width: 280px;
     background: var(--sidebar-bg);
@@ -49,45 +47,8 @@ html, body {
     flex-direction: column;
     padding: 1.5rem;
     position: relative;
-    overflow-y: auto;
+    overflow-y: auto; /* Keep sidebar scrollable */
     z-index: 10;
-    transition: all var(--transition-speed);
-}
-
-/* On smaller screens, sidebar stacks on top */
-@media (max-width: 768px) {
-    .layout {
-        flex-direction: column;
-    }
-    .sidebar {
-        width: 100%;
-        height: auto;
-        max-height: 40vh;        /* limit height, scroll if needed */
-        border-right: none;
-        border-bottom: 2px solid var(--accent-purple);
-        padding: 1rem;
-    }
-    .main-content {
-        height: 60vh;            /* take remaining space */
-    }
-}
-
-/* On very small phones, adjust further */
-@media (max-width: 480px) {
-    .sidebar {
-        max-height: 35vh;
-        padding: 0.8rem;
-    }
-    .sidebar-header h2 {
-        font-size: 1.4rem;
-        margin-bottom: 0.5rem;
-    }
-    .nav-link {
-        padding: 0.7rem 1rem;
-    }
-    .nav-icon {
-        font-size: 1.2rem;
-    }
 }
 
 .sidebar::before {
@@ -106,13 +67,6 @@ html, body {
     padding-bottom: 1.5rem;
     margin-bottom: 1.5rem;
     position: relative;
-}
-
-@media (max-width: 480px) {
-    .sidebar-header {
-        padding-bottom: 0.8rem;
-        margin-bottom: 0.8rem;
-    }
 }
 
 .sidebar-header h2 {
@@ -220,13 +174,6 @@ html, body {
     position: relative;
 }
 
-@media (max-width: 480px) {
-    .nav-section {
-        margin-top: 0.8rem;
-        padding-top: 0.8rem;
-    }
-}
-
 .nav-section::after {
     content: '';
     position: absolute;
@@ -283,8 +230,8 @@ html, body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    min-height: 0;
+    overflow-y: auto; /* Enable vertical scrolling */
+    min-height: 0;    /* Critical for flex child scrolling */
     background: var(--bg-dark);
     position: relative;
 }
@@ -312,21 +259,6 @@ html, body {
     box-shadow: 0 5px 20px rgba(0,0,0,0.5);
     position: relative;
     z-index: 5;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1rem;
-}
-
-@media (max-width: 480px) {
-    .top-bar {
-        padding: 0.8rem 1rem;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .top-bar a, .top-bar label {
-        font-size: 0.9rem;
-    }
 }
 
 .page-title {
@@ -337,28 +269,11 @@ html, body {
     letter-spacing: 2px;
 }
 
-@media (max-width: 480px) {
-    .page-title {
-        font-size: 1.4rem;
-    }
-}
-
 .content-container {
     padding: 2rem;
     position: relative;
     z-index: 1;
-    min-height: 0;
-}
-
-@media (max-width: 768px) {
-    .content-container {
-        padding: 1.5rem;
-    }
-}
-@media (max-width: 480px) {
-    .content-container {
-        padding: 1rem;
-    }
+    min-height: 0; /* Ensure inner content can shrink/scroll properly */
 }
 
 /* Game grid */
@@ -366,13 +281,6 @@ html, body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 25px;
-}
-
-@media (max-width: 480px) {
-    .game-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
 }
 
 .game-card {
@@ -427,12 +335,6 @@ html, body {
     overflow: hidden;
 }
 
-@media (max-width: 480px) {
-    .preview-container {
-        height: 180px;
-    }
-}
-
 .preview-container::after {
     content: '';
     position: absolute;
@@ -462,23 +364,11 @@ html, body {
     backdrop-filter: blur(5px);
 }
 
-@media (max-width: 480px) {
-    .game-info {
-        padding: 1rem;
-    }
-}
-
 .game-info h3 {
     margin: 0 0 12px 0;
     color: var(--accent-purple);
     font-size: 1.4rem;
     text-shadow: 0 0 8px var(--accent-purple);
-}
-
-@media (max-width: 480px) {
-    .game-info h3 {
-        font-size: 1.2rem;
-    }
 }
 
 .game-info button {
@@ -495,16 +385,6 @@ html, body {
     box-shadow: 0 0 15px var(--accent-blue);
     position: relative;
     overflow: hidden;
-    width: 100%;
-    max-width: 200px;
-}
-
-@media (max-width: 480px) {
-    .game-info button {
-        padding: 8px 16px;
-        font-size: 0.9rem;
-        max-width: 100%;
-    }
 }
 
 .game-info button::before {
@@ -540,13 +420,6 @@ html, body {
     box-shadow: 0 -10px 30px rgba(138,43,226,0.3);
 }
 
-@media (max-width: 480px) {
-    .support-footer {
-        margin-top: 2rem;
-        padding: 1.5rem;
-    }
-}
-
 .support-footer::before {
     content: '';
     position: absolute;
@@ -566,30 +439,11 @@ html, body {
     letter-spacing: 2px;
 }
 
-@media (max-width: 480px) {
-    .support-footer h4 {
-        font-size: 1.5rem;
-    }
-}
-
 .support-links {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 2rem;
-}
-
-@media (max-width: 768px) {
-    .support-links {
-        gap: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .support-links {
-        flex-direction: column;
-        align-items: center;
-    }
 }
 
 .support-links a {
@@ -607,15 +461,6 @@ html, body {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-}
-
-@media (max-width: 480px) {
-    .support-links a {
-        font-size: 1rem;
-        padding: 0.6rem 1.2rem;
-        width: 100%;
-        justify-content: center;
-    }
 }
 
 .support-links a::before {
@@ -655,18 +500,6 @@ html, body {
     overflow: hidden;
 }
 
-@media (max-width: 768px) {
-    .about-container {
-        margin: 1rem;
-        padding: 1.5rem;
-    }
-}
-@media (max-width: 480px) {
-    .about-container {
-        padding: 1rem;
-    }
-}
-
 .about-container::after {
     content: '';
     position: absolute;
@@ -690,12 +523,6 @@ html, body {
     text-shadow: 0 0 15px var(--accent-blue);
     position: relative;
     z-index: 2;
-}
-
-@media (max-width: 480px) {
-    .about-container h1 {
-        font-size: 1.8rem;
-    }
 }
 
 .about-container ul {
@@ -729,28 +556,6 @@ html, body {
     position: relative;
 }
 
-@media (max-width: 768px) {
-    .emergency-container,
-    .error-page,
-    .help-container,
-    .guide-container,
-    .license-container,
-    .legal-container {
-        margin: 1rem;
-        padding: 1.5rem;
-    }
-}
-@media (max-width: 480px) {
-    .emergency-container,
-    .error-page,
-    .help-container,
-    .guide-container,
-    .license-container,
-    .legal-container {
-        padding: 1rem;
-    }
-}
-
 .emergency-header h1,
 .error-page h1,
 .help-container h1,
@@ -763,29 +568,11 @@ html, body {
     margin-top: 0;
 }
 
-@media (max-width: 480px) {
-    .emergency-header h1,
-    .error-page h1,
-    .help-container h1,
-    .guide-container h1,
-    .license-container h1,
-    .legal-container h1 {
-        font-size: 1.8rem;
-    }
-}
-
 .emergency-contacts {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     margin: 2rem 0;
-}
-
-@media (max-width: 480px) {
-    .emergency-contacts {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
 }
 
 .contact-card {
@@ -796,12 +583,6 @@ html, body {
     transition: all var(--transition-speed);
     position: relative;
     overflow: hidden;
-}
-
-@media (max-width: 480px) {
-    .contact-card {
-        padding: 1rem;
-    }
 }
 
 .contact-card::before {
@@ -905,7 +686,6 @@ html, body {
     color: var(--text-light);
     font-size: 1rem;
     transition: all var(--transition-speed);
-    -webkit-appearance: none; /* improve styling on iOS */
 }
 
 .form-group input:focus,
@@ -929,14 +709,6 @@ button[type="submit"] {
     max-width: 300px;
     margin: 1rem auto;
     display: block;
-}
-
-@media (max-width: 480px) {
-    button[type="submit"] {
-        max-width: 100%;
-        font-size: 1rem;
-        padding: 0.8rem 1.5rem;
-    }
 }
 
 button[type="submit"]:hover:not(:disabled) {
@@ -967,12 +739,6 @@ button[type="submit"]:disabled {
     transition: all var(--transition-speed);
 }
 
-@media (max-width: 480px) {
-    .faq-section details {
-        padding: 0.3rem 0.8rem;
-    }
-}
-
 .faq-section details[open] {
     background: rgba(138,43,226,0.1);
     border-color: var(--accent-blue);
@@ -985,12 +751,6 @@ button[type="submit"]:disabled {
     cursor: pointer;
     padding: 0.5rem;
     font-size: 1.2rem;
-}
-
-@media (max-width: 480px) {
-    .faq-section summary {
-        font-size: 1rem;
-    }
 }
 
 .faq-answer {
@@ -1011,12 +771,6 @@ button[type="submit"]:disabled {
     margin-bottom: 1.5rem;
     border-radius: 0 20px 20px 0;
     transition: all var(--transition-speed);
-}
-
-@media (max-width: 480px) {
-    .guide-section {
-        padding: 1rem;
-    }
 }
 
 .guide-section:hover {
@@ -1044,14 +798,6 @@ button[type="submit"]:disabled {
     overflow-y: auto;
 }
 
-@media (max-width: 480px) {
-    .license-text,
-    .legal-text {
-        padding: 1rem;
-        max-height: 300px;
-    }
-}
-
 /* Device selector (on game page) */
 .device-selector {
     background: var(--panel-bg);
@@ -1066,15 +812,6 @@ button[type="submit"]:disabled {
     flex-wrap: wrap;
 }
 
-@media (max-width: 480px) {
-    .device-selector {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
-        padding: 1rem;
-    }
-}
-
 .device-selector select {
     background: var(--bg-dark);
     color: var(--text-light);
@@ -1084,14 +821,6 @@ button[type="submit"]:disabled {
     font-size: 1rem;
     cursor: pointer;
     transition: all var(--transition-speed);
-    flex: 1;
-    min-width: 200px;
-}
-
-@media (max-width: 480px) {
-    .device-selector select {
-        width: 100%;
-    }
 }
 
 .device-selector select:hover {
@@ -1109,13 +838,6 @@ button[type="submit"]:disabled {
     font-weight: bold;
     cursor: pointer;
     transition: all var(--transition-speed);
-}
-
-@media (max-width: 480px) {
-    .device-selector button {
-        width: 100%;
-        padding: 0.8rem;
-    }
 }
 
 .device-selector button:hover {
