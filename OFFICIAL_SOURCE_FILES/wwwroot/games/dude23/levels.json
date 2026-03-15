@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Castle Courtyard",
+    "objects": [
+      { "assetId": "greenPlane", "x": 0, "y": 0, "z": 0, "scaleX": 100, "scaleY": 1, "scaleZ": 100 },
+      { "assetId": "redCube", "x": 10, "y": 1, "z": 5, "scaleX": 2, "scaleY": 2, "scaleZ": 2 },
+      { "assetId": "redCube", "x": -10, "y": 1, "z": 5, "scaleX": 2, "scaleY": 2, "scaleZ": 2 },
+      { "assetId": "blueSphere", "x": 0, "y": 1, "z": -5, "scaleX": 1.5, "scaleY": 1.5, "scaleZ": 1.5 },
+      { "assetId": "redCube", "x": 5, "y": 1, "z": -8, "scaleX": 1, "scaleY": 3, "scaleZ": 1 },
+      { "assetId": "redCube", "x": -5, "y": 1, "z": -8, "scaleX": 1, "scaleY": 3, "scaleZ": 1 },
+      { "assetId": "blueSphere", "x": 0, "y": 3, "z": 10, "scaleX": 2, "scaleY": 2, "scaleZ": 2 }
+    ]
+  },
+  {
+    "name": "Underground Cavern",
+    "objects": [
+      { "assetId": "greenPlane", "x": 0, "y": -10, "z": 0, "scaleX": 50, "scaleY": 1, "scaleZ": 50 },
+      { "assetId": "redCube", "x": 0, "y": -8, "z": 0, "scaleX": 10, "scaleY": 2, "scaleZ": 10 },
+      { "assetId": "blueSphere", "x": 5, "y": -5, "z": 5, "scaleX": 1, "scaleY": 1, "scaleZ": 1 },
+      { "assetId": "blueSphere", "x": -5, "y": -5, "z": 5, "scaleX": 1, "scaleY": 1, "scaleZ": 1 },
+      { "assetId": "blueSphere", "x": 5, "y": -5, "z": -5, "scaleX": 1, "scaleY": 1, "scaleZ": 1 },
+      { "assetId": "blueSphere", "x": -5, "y": -5, "z": -5, "scaleX": 1, "scaleY": 1, "scaleZ": 1 }
+    ]
+  }
+]

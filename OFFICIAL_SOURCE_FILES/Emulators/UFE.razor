@@ -1,0 +1,53 @@
+@page "/ufe/play"
+@page "/ufe/play/{gamePath?}"
+@namespace MiniGames.Emulators.UFE
+@inject NavigationManager Navigation
+@inject GameService GameService
+
+<div class="ufe-container" style="width: 100%; height: 100vh; display: flex; flex-direction: column;">
+    <h2 style="color: white; text-align: center; padding: 10px;">Universal Frontend Emulator</h2>
+    <div style="flex: 1; background: #000; border-radius: 8px; overflow: hidden;">
+        <iframe id="ufeFrame"
+                style="width: 100%; height: 100%; border: none;"
+                src="@_iframeSrc"
+                allow="autoplay; fullscreen">
+        </iframe>
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? gamePath { get; set; }
+
+    private string? _iframeSrc;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(gamePath))
+        {
+            return;
+        }
+
+        // Get game info from your existing GameService
+        var games = await GameService.GetGamesAsync();
+        var game = games.FirstOrDefault(g => g.Folder.Equals(gamePath, StringComparison.OrdinalIgnoreCase));
+        if (game == null)
+        {
+            return;
+        }
+
+        // Determine system based on game metadata (you'll need to extend GameInfo)
+        // For simplicity, assume you have a property like game.System = "flash", "gba", or "ps1"
+        string system = game.System ?? "gba"; // fallback
+
+        // Build the ROM URL (absolute path)
+        string romUrl = game.GamePath.StartsWith("/") ? game.GamePath : "/" + game.GamePath;
+
+        // Optional cache‑buster
+        string cacheBuster = DateTime.Now.Ticks.ToString();
+        string romUrlWithCache = $"{romUrl}?v={cacheBuster}";
+        string encodedRomUrl = Uri.EscapeDataString(romUrlWithCache);
+
+        // Build iframe src
+        _iframeSrc = $"/ufe/ufe.html?system={system}&rom={encodedRomUrl}";
+    }
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; background: #111; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        canvas { border: 2px solid #333; background: #222; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="300"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let player = { x: 50, y: 50 };
+        let keys = {};
+
+        // Game loop
+        function update() {
+            if (keys['ArrowUp']) player.y -= 2;
+            if (keys['ArrowDown']) player.y += 2;
+            if (keys['ArrowLeft']) player.x -= 2;
+            if (keys['ArrowRight']) player.x += 2;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, 400, 300);
+            ctx.fillStyle = '#0f0';
+            ctx.fillRect(player.x, player.y, 20, 20);
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+
+        // Listen for messages from parent (Blazor)
+        window.addEventListener('message', (event) => {
+            const command = event.data;
+            if (command.type === 'keydown') {
+                keys[command.key] = true;
+            } else if (command.type === 'keyup') {
+                keys[command.key] = false;
+            } else if (command.type === 'getState') {
+                event.source.postMessage({
+                    type: 'state',
+                    playerX: player.x,
+                    playerY: player.y
+                }, event.origin);
+            }
+        });
+    </script>
+</body>
+</html>

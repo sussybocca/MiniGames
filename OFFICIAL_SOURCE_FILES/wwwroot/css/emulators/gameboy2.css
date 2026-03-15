@@ -1,0 +1,288 @@
+.gameboy2-emulator {
+    background: #4a3a2a;
+    padding: 30px;
+    border-radius: 40px 40px 30px 30px;
+    display: inline-block;
+    box-shadow: 0 20px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,215,0,0.2);
+    border: 3px solid #b8860b;
+}
+
+.gameboy2-shell {
+    background: #2a1e12;
+    border-radius: 30px 30px 20px 20px;
+    padding: 20px;
+    border: 2px solid #8b5a2b;
+}
+
+.gameboy2-top {
+    background: #1a120a;
+    border-radius: 20px 20px 10px 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.screen-bezel {
+    background: #111;
+    border-radius: 15px;
+    padding: 15px;
+    border: 4px solid #5a4a3a;
+    box-shadow: inset 0 0 15px #000;
+    position: relative;
+}
+
+.screen-content {
+    background: #9bbc0f;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    position: relative;
+}
+
+.game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #9bbc0f;
+}
+
+.scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.1) 0px, rgba(255,255,255,0.05) 1px, transparent 2px);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+}
+
+.pixel-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 4px 4px;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.screen-off {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #111;
+    color: #444;
+    font-size: 3rem;
+}
+
+.screen-glare {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+    transform: rotate(30deg);
+    animation: glareMove 12s infinite linear;
+    pointer-events: none;
+    z-index: 4;
+}
+
+@keyframes glareMove {
+    0% { transform: rotate(30deg) translateX(-100%); }
+    100% { transform: rotate(30deg) translateX(100%); }
+}
+
+.power-led {
+    position: absolute;
+    bottom: 5px;
+    right: 20px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+}
+.power-led.on {
+    background: #0f0;
+    box-shadow: 0 0 5px #0f0;
+}
+
+.branding {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    color: #b8860b;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+}
+.nintendo {
+    font-size: 16px;
+    letter-spacing: 2px;
+}
+.gameboy {
+    font-size: 20px;
+    background: #b8860b;
+    color: #2a1e12;
+    padding: 4px 10px;
+    border-radius: 15px;
+}
+
+.gameboy2-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    background: #3a2e22;
+    padding: 20px;
+    border-radius: 20px;
+    border: 2px solid #b8860b;
+}
+
+.dpad-section {
+    flex: 1;
+    min-width: 120px;
+}
+
+.dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    width: 100%;
+}
+
+.dpad button {
+    background: #2a1e12;
+    color: #ffd700;
+    border: 2px solid #8b5a2b;
+    border-radius: 8px;
+    font-size: 20px;
+    padding: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #5a3e1f;
+    transition: all 0.1s;
+}
+.dpad button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+.dpad-up { grid-column: 2; }
+.dpad-left { grid-column: 1; grid-row: 2; }
+.dpad-right { grid-column: 3; grid-row: 2; }
+.dpad-down { grid-column: 2; grid-row: 3; }
+
+.action-buttons {
+    display: flex;
+    gap: 20px;
+}
+.btn-a, .btn-b {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 3px solid #b8860b;
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 6px 0 #5a3e1f;
+    transition: all 0.1s;
+}
+.btn-a:active, .btn-b:active {
+    transform: translateY(6px);
+    box-shadow: none;
+}
+.btn-a { background: #f44; }
+.btn-b { background: #4f4; color: black; }
+
+.system-buttons {
+    display: flex;
+    gap: 15px;
+}
+.btn-start, .btn-select {
+    padding: 10px 20px;
+    background: #3a2e22;
+    color: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 15px;
+    font-size: 14px;
+    box-shadow: 0 4px 0 #2a1e12;
+}
+
+.analog-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+.power-toggle {
+    background: #c44;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    cursor: pointer;
+}
+.volume, .contrast {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    background: #222;
+    padding: 5px 10px;
+    border-radius: 20px;
+    color: #0f0;
+    font-family: monospace;
+}
+.volume button, .contrast button {
+    background: #444;
+    color: #ffd700;
+    border: none;
+    border-radius: 5px;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+}
+
+.cartridge-slot {
+    margin-top: 15px;
+    text-align: center;
+    background: #1a120a;
+    padding: 8px;
+    border-radius: 10px;
+    border: 2px solid #b8860b;
+    color: #ffd700;
+    font-family: monospace;
+}
+.cartridge-label {
+    font-size: 14px;
+}
+
+/* Chaos/glitch overlays (same as DS2) */
+.glitch-overlay, .static-overlay, .color-shift { /* reuse from DS2 CSS if needed */ }
+
+.simulated-error {
+    background: #800;
+    color: #ff0;
+    padding: 20px;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: monospace;
+}
+.simulated-error button {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: #ff0;
+    color: #800;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}

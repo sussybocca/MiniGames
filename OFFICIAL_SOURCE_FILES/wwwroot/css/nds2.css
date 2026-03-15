@@ -1,0 +1,501 @@
+/* ========== BASE DS2 STYLING ========== */
+.nds2-emulator {
+    background: #3a2c1f;
+    padding: 20px;
+    border-radius: 30px 30px 20px 20px;
+    display: inline-block;
+    box-shadow: 0 20px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,215,0,0.3);
+    border: 3px solid #b8860b;
+}
+
+.nds2-shell {
+    background: #4a3a2a;
+    border-radius: 20px 20px 30px 30px;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 10px rgba(255,215,0,0.2);
+    border: 2px solid #b8860b;
+}
+
+.top-lid {
+    background: #2a1e12;
+    border-radius: 15px 15px 5px 5px;
+    padding: 15px;
+    border-bottom: 2px solid #8b5a2b;
+}
+
+.top-screen-bezel, .bottom-screen-bezel {
+    background: #111;
+    border-radius: 10px;
+    padding: 10px;
+    border: 3px solid #5a4a3a;
+    box-shadow: inset 0 0 10px #000;
+}
+
+.screen-content {
+    background: #000;
+    border-radius: 5px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    position: relative;
+}
+
+.game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #000;
+}
+
+/* Screen effects (always on) */
+.scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0px, rgba(255,255,255,0.05) 1px, transparent 2px);
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+}
+
+.pixel-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+    background-size: 4px 4px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.screen-glare {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+    transform: rotate(30deg);
+    animation: glareMove 10s infinite linear;
+    pointer-events: none;
+    z-index: 4;
+}
+
+@keyframes glareMove {
+    0% { transform: rotate(30deg) translateX(-100%); }
+    100% { transform: rotate(30deg) translateX(100%); }
+}
+
+/* Top lid details */
+.top-lid-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    color: #b8860b;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+}
+
+.nintendo-logo {
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+
+.ds2-logo {
+    font-size: 18px;
+    background: #b8860b;
+    color: #2a1e12;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.power-led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    box-shadow: inset 0 0 2px #000;
+}
+.power-led.on {
+    background: #0f0;
+    box-shadow: 0 0 5px #0f0;
+}
+
+/* Hinge */
+.hinge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
+    background: #3a2c1f;
+    border-radius: 0 0 10px 10px;
+    margin: -5px 0;
+    z-index: 2;
+}
+
+.hinge-center {
+    width: 60px;
+    height: 20px;
+    background: #5a4a3a;
+    border-radius: 10px;
+    box-shadow: inset 0 2px 5px #2a1e12;
+}
+
+.hinge-left, .hinge-right {
+    width: 20px;
+    height: 20px;
+    background: #5a4a3a;
+    border-radius: 50%;
+    margin: 0 10px;
+}
+
+/* Bottom unit */
+.bottom-unit {
+    background: #2a1e12;
+    border-radius: 5px 5px 15px 15px;
+    padding: 15px;
+    margin-top: 5px;
+}
+
+/* Controls panel */
+.controls-panel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 15px;
+    gap: 15px;
+    background: #3a2e22;
+    padding: 20px;
+    border-radius: 20px;
+    border: 2px solid #b8860b;
+}
+
+.dpad-section {
+    flex: 1;
+    min-width: 120px;
+}
+
+.dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    width: 100%;
+}
+
+.dpad button {
+    background: #2a1e12;
+    color: #ffd700;
+    border: 2px solid #8b5a2b;
+    border-radius: 8px;
+    font-size: 20px;
+    padding: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #5a3e1f;
+    transition: all 0.1s;
+}
+
+.dpad button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.dpad-up { grid-column: 2; }
+.dpad-left { grid-column: 1; grid-row: 2; }
+.dpad-right { grid-column: 3; grid-row: 2; }
+.dpad-down { grid-column: 2; grid-row: 3; }
+
+.action-section {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.action-section button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #b8860b;
+    box-shadow: 0 4px 0 #5a3e1f;
+    transition: all 0.1s;
+}
+
+.action-section button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.btn-a { background: #f44; }
+.btn-b { background: #4f4; color: black; }
+.btn-x { background: #44f; }
+.btn-y { background: #ff4; color: black; }
+
+.shoulder-section {
+    display: flex;
+    gap: 15px;
+}
+
+.shoulder-section button {
+    padding: 8px 16px;
+    background: #5a4a3a;
+    color: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 15px;
+    font-size: 14px;
+    box-shadow: 0 4px 0 #3a2e1f;
+}
+
+.system-section {
+    display: flex;
+    gap: 10px;
+}
+
+.system-section button {
+    padding: 6px 12px;
+    background: #3a2e22;
+    color: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 8px;
+    font-size: 12px;
+    box-shadow: 0 4px 0 #2a1e12;
+}
+
+/* Status panel */
+.status-panel {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    background: #1a120a;
+    padding: 8px;
+    border-radius: 10px;
+    color: #0f0;
+    font-family: monospace;
+    font-size: 12px;
+    border: 1px solid #b8860b;
+}
+
+.fps-indicator, .battery-indicator, .wifi-indicator {
+    padding: 2px 6px;
+    background: #2a1e12;
+    border-radius: 4px;
+}
+
+/* Touch overlay */
+.touch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.3);
+    cursor: crosshair;
+}
+
+.stylus-indicator {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    border: 2px solid #00f;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    box-shadow: 0 0 15px cyan;
+}
+
+.touch-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #aaa;
+    font-size: 18px;
+    background: rgba(0,0,0,0.5);
+}
+
+.stylus-toggle {
+    margin-top: 8px;
+    padding: 5px 10px;
+    background: #5a4a3a;
+    color: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+}
+
+/* Simulated error overlay */
+.simulated-error {
+    background: #800;
+    color: #ff0;
+    padding: 20px;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: monospace;
+}
+
+.simulated-error button {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: #ff0;
+    color: #800;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* ========== CHAOS EFFECT CLASSES ========== */
+
+/* Glitch overlay (applied to screen-content) */
+.glitch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, rgba(255,0,255,0.2) 0px, rgba(0,255,255,0.2) 2px, transparent 4px);
+    mix-blend-mode: multiply;
+    animation: glitchMove 0.1s infinite;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes glitchMove {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(2px, -2px); }
+    60% { transform: translate(-2px, -2px); }
+    80% { transform: translate(2px, 2px); }
+    100% { transform: translate(0); }
+}
+
+/* Static noise overlay */
+.static-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" opacity="0.2"/></svg>');
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 10;
+    animation: staticFlicker 0.05s infinite;
+}
+
+@keyframes staticFlicker {
+    0% { opacity: 0.1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.1; }
+}
+
+/* Color shift overlay */
+.color-shift {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0);
+    mix-blend-mode: difference;
+    animation: colorCycle 0.5s infinite;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes colorCycle {
+    0% { background: rgba(255,0,0,0.2); }
+    25% { background: rgba(0,255,0,0.2); }
+    50% { background: rgba(0,0,255,0.2); }
+    75% { background: rgba(255,255,0,0.2); }
+    100% { background: rgba(255,0,255,0.2); }
+}
+
+/* Full-device shake (applied to nds2-shell) */
+.chaos-shake {
+    animation: deviceShake 0.2s infinite;
+}
+@keyframes deviceShake {
+    0% { transform: translate(0); }
+    20% { transform: translate(-3px, 3px); }
+    40% { transform: translate(3px, -3px); }
+    60% { transform: translate(-3px, -3px); }
+    80% { transform: translate(3px, 3px); }
+    100% { transform: translate(0); }
+}
+
+/* Spin effect (applied to nds2-shell) */
+.chaos-spin {
+    animation: spin 0.5s infinite linear;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Pixelate filter (applied to top-lid/bottom-unit) */
+.chaos-pixelate {
+    filter: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><filter id='pixelate'><feFlood x='4' y='4' height='2' width='2'/><feComposite width='8' height='8'/></filter></svg>#pixelate");
+    image-rendering: pixelated;
+}
+
+/* Wave effect (applied to bezels) */
+.chaos-wave {
+    animation: wave 0.3s infinite ease-in-out;
+}
+@keyframes wave {
+    0% { transform: skew(0deg); }
+    25% { transform: skew(2deg); }
+    75% { transform: skew(-2deg); }
+    100% { transform: skew(0deg); }
+}
+
+/* VHS distortion (applied to bezels) */
+.chaos-vhs {
+    animation: vhs 0.1s infinite;
+}
+@keyframes vhs {
+    0% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
+    20% { transform: translate(-1px, 1px) scale(1.01); filter: hue-rotate(10deg); }
+    40% { transform: translate(1px, -1px) scale(0.99); filter: hue-rotate(-10deg); }
+    60% { transform: translate(-1px, -1px) scale(1.01); filter: hue-rotate(20deg); }
+    80% { transform: translate(1px, 1px) scale(0.99); filter: hue-rotate(-20deg); }
+    100% { transform: translate(0, 0) scale(1); filter: hue-rotate(0deg); }
+}
+
+/* Corrupt data effect (applied to screen-content) */
+.chaos-corrupt {
+    filter: blur(1px) contrast(2) brightness(0.8);
+    mix-blend-mode: difference;
+}
+
+/* Lag effect (applied to bezels) – stuttering animation */
+.chaos-lag {
+    animation: lagStutter 0.5s infinite;
+}
+@keyframes lagStutter {
+    0% { transform: translate(0); opacity: 1; }
+    10% { transform: translate(-1px, 1px); opacity: 0.9; }
+    20% { transform: translate(1px, -1px); opacity: 0.8; }
+    30% { transform: translate(-1px, -1px); opacity: 0.9; }
+    40% { transform: translate(1px, 1px); opacity: 1; }
+    50% { transform: translate(0); opacity: 1; }
+    60% { transform: scale(1.01); opacity: 0.9; }
+    70% { transform: scale(0.99); opacity: 0.8; }
+    80% { transform: scale(1); opacity: 0.9; }
+    90% { transform: scale(1.02); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}

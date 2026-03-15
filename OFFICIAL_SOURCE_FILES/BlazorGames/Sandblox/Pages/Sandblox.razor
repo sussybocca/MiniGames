@@ -1,0 +1,106 @@
+@page "/sandblox"
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject GameService GameService
+@inject WorldPersistence WorldPersistence
+
+<canvas id="sandblox-canvas" @ref="canvasElement" @onkeydown="OnKeyDown" @onkeyup="OnKeyUp" @onmousemove="OnMouseMove" @onclick="OnCanvasClick" @oncontextmenu="PreventContextMenu" tabindex="0"></canvas>
+
+<div class="sandblox-ui">
+    <div class="crosshair">+</div>
+    <div class="hotbar">
+        @for (int i = 0; i < 9; i++)
+        {
+            <div class="slot @(i == selectedSlot ? "selected" : "")" @onclick="() => SelectSlot(i)">
+                @(i + 1)<br />
+                <span class="item-name">@(GetItemName(i))</span>
+            </div>
+        }
+    </div>
+    <div class="stats">
+        <div>Health: @health</div>
+        <div>Hunger: @hunger</div>
+    </div>
+    <div class="position">
+        X: @playerX.ToString("F1") Y: @playerY.ToString("F1") Z: @playerZ.ToString("F1")
+    </div>
+</div>
+
+@code {
+    private ElementReference canvasElement;
+    private ThreeJsInterop? threeJs;
+    private int selectedSlot = 0;
+    private int health = 20;
+    private int hunger = 20;
+    private float playerX, playerY, playerZ;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            threeJs = new ThreeJsInterop(JSRuntime);
+            await threeJs.InitializeAsync(canvasElement, DotNetObjectReference.Create(this));
+            await GameService.InitializeAsync(threeJs);
+            await threeJs.StartGameLoop();
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        await threeJs?.HandleKeyDownAsync(e.Key, e.ShiftKey, e.CtrlKey);
+        if (e.Key == "E") await ToggleInventory();
+        else if (e.Key == "F3") await threeJs.ToggleDebug();
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs e) => await threeJs?.HandleKeyUpAsync(e.Key);
+    private async Task OnMouseMove(MouseEventArgs e) => await threeJs?.HandleMouseMoveAsync(e.MovementX, e.MovementY);
+    private async Task OnCanvasClick(MouseEventArgs e) => await threeJs?.HandleClickAsync(e.Button);
+    private void PreventContextMenu() { } // @oncontextmenu="PreventContextMenu" prevents right-click menu
+
+    private void SelectSlot(int slot)
+    {
+        selectedSlot = slot;
+        threeJs?.SetSelectedSlot(slot);
+    }
+
+    private string GetItemName(int slot) => GameService.GetHotbarItemName(slot);
+
+    [JSInvokable]
+    public void OnBlockHit(int x, int y, int z, int face, double hitX, double hitY, double hitZ)
+    {
+        GameService.BreakBlock(x, y, z);
+    }
+
+    [JSInvokable]
+    public void OnBlockPlace(int x, int y, int z, int face)
+    {
+        GameService.PlaceBlock(x, y, z, face, selectedSlot);
+    }
+
+    [JSInvokable]
+    public void UpdatePlayerPosition(float x, float y, float z)
+    {
+        playerX = x; playerY = y; playerZ = z;
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void UpdateStats(int newHealth, int newHunger)
+    {
+        health = newHealth;
+        hunger = newHunger;
+        StateHasChanged();
+    }
+
+    private async Task ToggleInventory()
+    {
+        // Show inventory UI (separate component)
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (threeJs != null)
+            await threeJs.DisposeAsync();
+        await GameService.SaveWorldAsync();
+    }
+}

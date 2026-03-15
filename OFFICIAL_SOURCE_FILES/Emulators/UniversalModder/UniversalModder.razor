@@ -1,0 +1,330 @@
+@namespace MiniGames.Emulators.UniversalModder
+@page "/emulator/universal-modder"
+@using MoonSharp.Interpreter
+@using System.Text.Json
+@using System.Text.Json.Nodes
+@inject IJSRuntime JS
+
+<div class="um-container" style="display: flex; flex-direction: column; height: 100vh; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1e1e2f; color: #fff;">
+    
+    <!-- Header with mode toggle -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin:0;">🎮 Universal Game Modder</h2>
+        <div style="background: #2d2d3a; padding: 5px; border-radius: 30px;">
+            <button class="mode-btn @(_mode == Mode.Simple ? "active" : "")" @onclick="() => SetMode(Mode.Simple)">✨ Simple</button>
+            <button class="mode-btn @(_mode == Mode.Advanced ? "active" : "")" @onclick="() => SetMode(Mode.Advanced)">⚡ Advanced</button>
+        </div>
+    </div>
+
+    <!-- Main content: game and controls -->
+    <div style="display: flex; gap: 20px; flex: 1; min-height: 0;">
+        <!-- Game iframe area -->
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <div style="background: #2d2d3a; padding: 10px; border-radius: 8px 8px 0 0;">
+                <span>🕹️ Game Preview</span>
+            </div>
+            <iframe @ref="_iframe" 
+                    src="/emulators/universalmodder/sample.html" 
+                    style="flex:1; width: 100%; border: none; border-radius: 0 0 8px 8px; background: black;">
+            </iframe>
+        </div>
+
+        <!-- Right panel: script/actions and output -->
+        <div style="width: 450px; display: flex; flex-direction: column; gap: 20px;">
+            <!-- Simple Mode Panel -->
+            @if (_mode == Mode.Simple)
+            {
+                <div style="background: #2d2d3a; border-radius: 8px; padding: 15px;">
+                    <h4 style="margin-top:0; display: flex; justify-content: space-between;">
+                        🧩 Visual Actions
+                        <button class="btn-small" @onclick="AddAction">+ Add Action</button>
+                    </h4>
+                    <div style="max-height: 200px; overflow-y: auto; margin-bottom: 10px;">
+                        @for (int i = 0; i < _actions.Count; i++)
+                        {
+                            <div style="display: flex; gap: 5px; margin-bottom: 5px; background: #3a3a4a; padding: 5px; border-radius: 4px;">
+                                <select @bind="_actions[i].Type" style="flex:2; background:#1e1e2f; color:white; border:1px solid #555; padding:4px;">
+                                    <option value="move">Move</option>
+                                    <option value="press">Press Key</option>
+                                    <option value="wait">Wait</option>
+                                    <option value="custom">Custom Lua</option>
+                                </select>
+                                @if (_actions[i].Type == "move")
+                                {
+                                    <select @bind="_actions[i].Direction" style="flex:1; background:#1e1e2f; color:white; border:1px solid #555;">
+                                        <option value="up">↑ Up</option>
+                                        <option value="down">↓ Down</option>
+                                        <option value="left">← Left</option>
+                                        <option value="right">→ Right</option>
+                                    </select>
+                                    <input type="number" @bind="_actions[i].Steps" min="1" max="100" style="width:60px; background:#1e1e2f; color:white; border:1px solid #555;" />
+                                    <span>px</span>
+                                }
+                                else if (_actions[i].Type == "press")
+                                {
+                                    <input @bind="_actions[i].Key" placeholder="Key (e.g., Space)" style="flex:2; background:#1e1e2f; color:white; border:1px solid #555;" />
+                                }
+                                else if (_actions[i].Type == "wait")
+                                {
+                                    <input type="number" @bind="_actions[i].Seconds" min="0.1" max="10" step="0.1" style="width:80px; background:#1e1e2f; color:white; border:1px solid #555;" />
+                                    <span>sec</span>
+                                }
+                                else if (_actions[i].Type == "custom")
+                                {
+                                    <input @bind="_actions[i].CustomCode" placeholder="Lua code..." style="flex:3; background:#1e1e2f; color:white; border:1px solid #555;" />
+                                }
+                                <button class="btn-icon" @onclick="() => RemoveAction(i)">🗑️</button>
+                            </div>
+                        }
+                    </div>
+                    <button class="btn-primary" @onclick="RunSimpleScript" style="width:100%;">▶ Run Actions</button>
+                </div>
+            }
+
+            <!-- Advanced Mode Panel -->
+            @if (_mode == Mode.Advanced)
+            {
+                <div style="background: #2d2d3a; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; flex:1;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <h4 style="margin:0;">📝 Lua Script Editor</h4>
+                        <div>
+                            <button class="btn-small" @onclick="InsertSnippet">📋 Insert Snippet</button>
+                            <button class="btn-small" @onclick="GenerateFromActions">🔄 Sync from Simple</button>
+                        </div>
+                    </div>
+                    <textarea @bind="_luaScript" 
+                              rows="12" 
+                              style="width: 100%; font-family: 'Courier New', monospace; background: #1e1e2f; color: #0f0; border: 1px solid #555; padding: 8px; border-radius: 4px; resize: vertical;">
+                    </textarea>
+                    <div style="margin-top: 10px;">
+                        <button class="btn-primary" @onclick="RunScript" style="width:100%;">▶ Run Script</button>
+                    </div>
+                </div>
+            }
+
+            <!-- Output Panel (common) -->
+            <div style="background: #2d2d3a; border-radius: 8px; padding: 15px; flex:1; display: flex; flex-direction: column;">
+                <h4 style="margin-top:0;">📋 Output</h4>
+                <pre style="background: #1e1e2f; padding: 10px; border-radius: 4px; overflow: auto; flex:1; color: #0f0; margin:0;">@_output</pre>
+                <button class="btn-small" @onclick="ClearOutput" style="align-self: flex-end; margin-top: 5px;">Clear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ElementReference _iframe;
+    private string _luaScript = @"-- Advanced script
+sendMessage({ type='keydown', key='ArrowRight' })
+sleep(0.5)
+sendMessage({ type='keyup', key='ArrowRight' })
+";
+    private string _output = "";
+    private Script _lua = new Script(CoreModules.Basic | CoreModules.Json);
+
+    private enum Mode { Simple, Advanced }
+    private Mode _mode = Mode.Simple;
+
+    private List<ActionItem> _actions = new List<ActionItem>();
+
+    protected override void OnInitialized()
+    {
+        _actions.Add(new ActionItem { Type = "move", Direction = "right", Steps = 10 });
+
+        _lua.Globals["sendMessage"] = (Action<object>)(async (msg) =>
+        {
+            object safeMsg = ConvertLuaValueToJsonCompatible(DynValue.FromObject(_lua, msg));
+            await SendMessageToIframe(safeMsg);
+            _output += $"📤 Sent: {JsonSerializer.Serialize(safeMsg)}\n";
+            await InvokeAsync(StateHasChanged);
+        });
+
+        _lua.Globals["getGameState"] = (Func<Task<object>>)(async () =>
+        {
+            var state = await RequestGameState();
+            _output += $"📥 Received state: {JsonSerializer.Serialize(state)}\n";
+            await InvokeAsync(StateHasChanged);
+            return state;
+        });
+
+        _lua.Globals["sleep"] = (Action<double>)((seconds) => Task.Delay((int)(seconds * 1000)).Wait());
+    }
+
+    // Fully qualified MoonSharp.Interpreter.DataType to avoid ambiguity
+    private object ConvertLuaValueToJsonCompatible(DynValue value)
+    {
+        switch (value.Type)
+        {
+            case MoonSharp.Interpreter.DataType.Table:
+                var dict = new Dictionary<string, object>();
+                foreach (var kv in value.Table.Pairs)
+                {
+                    string key = kv.Key.CastToString() ?? kv.Key.ToPrintString();
+                    dict[key] = ConvertLuaValueToJsonCompatible(kv.Value);
+                }
+                return dict;
+            case MoonSharp.Interpreter.DataType.String:
+                return value.String;
+            case MoonSharp.Interpreter.DataType.Number:
+                return value.Number;
+            case MoonSharp.Interpreter.DataType.Boolean:
+                return value.Boolean;
+            case MoonSharp.Interpreter.DataType.Nil:
+                return null!;
+            default:
+                return value.ToPrintString();
+        }
+    }
+
+    private async Task SendMessageToIframe(object message)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("universalModder.sendMessage", _iframe, message);
+        }
+        catch (Exception ex)
+        {
+            _output += $"❌ JS error: {ex.Message}\n";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task<object> RequestGameState()
+    {
+        try
+        {
+            return await JS.InvokeAsync<object>("universalModder.getGameState", _iframe);
+        }
+        catch (Exception ex)
+        {
+            _output += $"❌ JS error: {ex.Message}\n";
+            await InvokeAsync(StateHasChanged);
+            return null!;
+        }
+    }
+
+    private async Task RunScript()
+    {
+        try
+        {
+            _output += "▶️ Running script...\n";
+            var result = _lua.DoString(_luaScript);
+            if (result != null && !result.IsNil())
+                _output += $"✅ Script returned: {result}\n";
+            else
+                _output += "✅ Script executed successfully.\n";
+        }
+        catch (ScriptRuntimeException ex)
+        {
+            _output += $"❌ Lua error: {ex.DecoratedMessage}\n";
+        }
+        catch (Exception ex)
+        {
+            _output += $"❌ Error: {ex.Message}\n";
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task GetGameState()
+    {
+        var state = await RequestGameState();
+        _output += $"🎮 Current game state: {JsonSerializer.Serialize(state)}\n";
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void ClearOutput()
+    {
+        _output = "";
+        StateHasChanged();
+    }
+
+    private void SetMode(Mode mode)
+    {
+        _mode = mode;
+        StateHasChanged();
+    }
+
+    private void AddAction()
+    {
+        _actions.Add(new ActionItem { Type = "move", Direction = "right", Steps = 10 });
+    }
+
+    private void RemoveAction(int index)
+    {
+        _actions.RemoveAt(index);
+    }
+
+    private async Task RunSimpleScript()
+    {
+        var script = "";
+        foreach (var a in _actions)
+        {
+            switch (a.Type)
+            {
+                case "move":
+                    script += $"sendMessage({{ type='keydown', key='Arrow{a.Direction}' }})\n";
+                    script += $"sleep({a.Steps * 0.05})\n";
+                    script += $"sendMessage({{ type='keyup', key='Arrow{a.Direction}' }})\n";
+                    break;
+                case "press":
+                    script += $"sendMessage({{ type='keydown', key='{a.Key}' }})\n";
+                    script += $"sleep(0.1)\n";
+                    script += $"sendMessage({{ type='keyup', key='{a.Key}' }})\n";
+                    break;
+                case "wait":
+                    script += $"sleep({a.Seconds})\n";
+                    break;
+                case "custom":
+                    script += a.CustomCode + "\n";
+                    break;
+            }
+        }
+        _luaScript = script;
+        await RunScript();
+    }
+
+    private void GenerateFromActions()
+    {
+        var script = "";
+        foreach (var a in _actions)
+        {
+            switch (a.Type)
+            {
+                case "move":
+                    script += $"sendMessage({{ type='keydown', key='Arrow{a.Direction}' }})\n";
+                    script += $"sleep({a.Steps * 0.05})\n";
+                    script += $"sendMessage({{ type='keyup', key='Arrow{a.Direction}' }})\n\n";
+                    break;
+                case "press":
+                    script += $"sendMessage({{ type='keydown', key='{a.Key}' }})\n";
+                    script += $"sleep(0.1)\n";
+                    script += $"sendMessage({{ type='keyup', key='{a.Key}' }})\n\n";
+                    break;
+                case "wait":
+                    script += $"sleep({a.Seconds})\n\n";
+                    break;
+                case "custom":
+                    script += a.CustomCode + "\n\n";
+                    break;
+            }
+        }
+        _luaScript = script;
+        StateHasChanged();
+    }
+
+    private void InsertSnippet()
+    {
+        _luaScript += "\n-- Get game state\nlocal state = getGameState()\nprint('Player at '..state.playerX..','..state.playerY)\n";
+        StateHasChanged();
+    }
+
+    private class ActionItem
+    {
+        public string Type { get; set; } = "move";
+        public string Direction { get; set; } = "right";
+        public int Steps { get; set; } = 10;
+        public string Key { get; set; } = "Space";
+        public double Seconds { get; set; } = 1.0;
+        public string CustomCode { get; set; } = "-- your code here";
+    }
+}

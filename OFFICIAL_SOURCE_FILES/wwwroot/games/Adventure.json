@@ -1,0 +1,67 @@
+{
+  "title": "The Lost Temple",
+  "genre": "platformer",
+  "theme": "jungle",
+  "width": 800,
+  "height": 600,
+  "player": {
+    "color": "#00ff00",
+    "speed": 6,
+    "jumpPower": 12,
+    "startX": 50,
+    "startY": 400
+  },
+  "levels": [
+    {
+      "name": "Jungle Entrance",
+      "map": [
+        "                    ",
+        "                    ",
+        "                    ",
+        "      #####         ",
+        "                    ",
+        "   #####            ",
+        "                    ",
+        "###                 ",
+        "                    ",
+        "####################"
+      ],
+      "enemies": [
+        { "x": 200, "y": 500, "type": "snake" },
+        { "x": 400, "y": 500, "type": "bat" }
+      ],
+      "collectibles": [
+        { "x": 150, "y": 300, "type": "coin", "value": 5 },
+        { "x": 350, "y": 200, "type": "gem", "value": 20 },
+        { "x": 550, "y": 400, "type": "coin", "value": 5 }
+      ],
+      "goal": { "x": 720, "y": 400 }
+    },
+    {
+      "name": "Temple Interior",
+      "map": [
+        "                    ",
+        "                    ",
+        "  ####           ###",
+        "                    ",
+        "    #####           ",
+        "                    ",
+        "###                 ",
+        "                    ",
+        "                    ",
+        "####################"
+      ],
+      "enemies": [
+        { "x": 100, "y": 500, "type": "snake" },
+        { "x": 300, "y": 500, "type": "bat" },
+        { "x": 500, "y": 500, "type": "mummy" }
+      ],
+      "collectibles": [
+        { "x": 200, "y": 250, "type": "coin", "value": 10 },
+        { "x": 400, "y": 150, "type": "gem", "value": 30 },
+        { "x": 600, "y": 300, "type": "key", "value": 1 }
+      ],
+      "goal": { "x": 700, "y": 400 }
+    }
+  ]
+}

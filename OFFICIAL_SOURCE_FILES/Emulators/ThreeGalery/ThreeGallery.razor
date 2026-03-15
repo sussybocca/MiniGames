@@ -1,0 +1,70 @@
+@page "/three"
+@inject HttpClient Http
+
+<div style="display: flex; height: 100vh; font-family: sans-serif;">
+    <!-- Sidebar with file list -->
+    <div style="width: 300px; overflow-y: auto; background: #1a1f2e; color: white; padding: 10px;">
+        <h3>Three.js Examples</h3>
+        @if (_loading)
+        {
+            <p>Loading examples...</p>
+        }
+        else
+        {
+            <ul style="list-style: none; padding: 0;">
+                @foreach (var file in _exampleFiles)
+                {
+                    <li style="margin: 5px 0;">
+                        <button @onclick="() => SelectExample(file)" 
+                                style="width:100%; text-align:left; background: none; border: none; color: @(file == _selectedFile ? "#0ff" : "white"); cursor:pointer; padding:5px;">
+                            @file
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <!-- Main content: iframe -->
+    <div style="flex: 1; background: #0a0f1e;">
+        @if (!string.IsNullOrEmpty(_selectedFile))
+        {
+            <iframe src="/three/examples/@_selectedFile" 
+                    style="width: 100%; height: 100%; border: none;">
+            </iframe>
+        }
+        else
+        {
+            <div style="color: white; text-align: center; margin-top: 50px;">
+                Select an example from the list.
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<string> _exampleFiles = new();
+    private string? _selectedFile;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _exampleFiles = await Http.GetFromJsonAsync<List<string>>("/three/examples-manifest.json") ?? new();
+        }
+        catch
+        {
+            // fallback or show error
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SelectExample(string file)
+    {
+        _selectedFile = file;
+    }
+}

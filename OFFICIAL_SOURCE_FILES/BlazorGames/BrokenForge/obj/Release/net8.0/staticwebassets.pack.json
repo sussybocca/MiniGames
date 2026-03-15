@@ -1,0 +1,33 @@
+{
+  "Files": [
+    {
+      "Id": "D:\\MiniGames\\BlazorGames\\BrokenForge\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "D:\\MiniGames\\BlazorGames\\BrokenForge\\wwwroot\\js\\gameCanvas.js",
+      "PackagePath": "staticwebassets\\js\\gameCanvas.js"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.BrokenForge.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.BrokenForge.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.build.BrokenForge.props",
+      "PackagePath": "build\\BrokenForge.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.BrokenForge.props",
+      "PackagePath": "buildMultiTargeting\\BrokenForge.props"
+    },
+    {
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildTransitive.BrokenForge.props",
+      "PackagePath": "buildTransitive\\BrokenForge.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

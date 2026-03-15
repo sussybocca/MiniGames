@@ -1,0 +1,59 @@
+@page "/brokenforge"  
+@using MiniGames.BlazorGames.BrokenForge.Models
+@using MiniGames.BlazorGames.BrokenForge.Services
+@inject MiniGames.BlazorGames.BrokenForge.Models.GameState GameState
+@inject MiniGames.BlazorGames.BrokenForge.Services.GameService GameService
+
+<h1>BrokenForge</h1>
+
+<div class="row">
+    <div class="col-md-3">
+        <h3>Player</h3>
+        <p>Health: @GameState.Player.Health / @GameState.Player.MaxHealth</p>
+        <p>Coins: @GameState.Player.Coins</p>
+        <p>Position: (@GameState.Player.PositionX, @GameState.Player.PositionY)</p>
+        @if (GameState.Player.EquippedWeapon != null)
+        {
+            <p>Weapon: @GameState.Player.EquippedWeapon.Name (DMG: @GameState.Player.EquippedWeapon.Damage, Dur: @GameState.Player.EquippedWeapon.Durability)</p>
+        }
+        else
+        {
+            <p>No weapon equipped.</p>
+        }
+    </div>
+    <div class="col-md-6">
+        <h3>World</h3>
+        <button @onclick="SpawnEnemy">Spawn Enemy</button>
+        <button @onclick="EndTurn">End Turn</button>
+    </div>
+    <div class="col-md-3">
+        <h3>Enemies</h3>
+        @foreach (var enemy in GameState.Enemies)
+        {
+            <div>
+                Enemy at (@enemy.PositionX, @enemy.PositionY) HP: @enemy.Health
+                @if (Math.Abs(enemy.PositionX - GameState.Player.PositionX) <= 1 && Math.Abs(enemy.PositionY - GameState.Player.PositionY) <= 1)
+                {
+                    <button @onclick="() => AttackEnemy(enemy)">Attack</button>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private void SpawnEnemy()
+    {
+        GameService.SpawnEnemy();
+    }
+
+    private void AttackEnemy(Enemy enemy)
+    {
+        GameService.AttackEnemy(enemy);
+    }
+
+    private void EndTurn()
+    {
+        GameService.EnemyTurn();
+    }
+}

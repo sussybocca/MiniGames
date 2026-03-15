@@ -1,0 +1,28 @@
+﻿<Project>
+  <ItemGroup>
+    <StaticWebAssetEndpoint Include="_content/BrokenForge/index.html">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-q/BuPKH41IBQ9a5Hp9pmvK3Ru9DVnwaA0YNP7W1K0mM="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"842"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022q/BuPKH41IBQ9a5Hp9pmvK3Ru9DVnwaA0YNP7W1K0mM=\u0022"},{"Name":"Last-Modified","Value":"Sun, 15 Mar 2026 22:17:29 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/BrokenForge/index.rcmeog7zj9.html">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\index.html'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"rcmeog7zj9"},{"Name":"integrity","Value":"sha256-q/BuPKH41IBQ9a5Hp9pmvK3Ru9DVnwaA0YNP7W1K0mM="},{"Name":"label","Value":"_content/BrokenForge/index.html"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"842"},{"Name":"Content-Type","Value":"text/html"},{"Name":"ETag","Value":"\u0022q/BuPKH41IBQ9a5Hp9pmvK3Ru9DVnwaA0YNP7W1K0mM=\u0022"},{"Name":"Last-Modified","Value":"Sun, 15 Mar 2026 22:17:29 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/BrokenForge/js/gameCanvas.i56yvn2yeb.js">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\gameCanvas.js'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"i56yvn2yeb"},{"Name":"integrity","Value":"sha256-pi4kKIk/FlRsh\u002BNkXWP86XhGrfqZ7l\u002BS8HwibJPBlR4="},{"Name":"label","Value":"_content/BrokenForge/js/gameCanvas.js"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022pi4kKIk/FlRsh\u002BNkXWP86XhGrfqZ7l\u002BS8HwibJPBlR4=\u0022"},{"Name":"Last-Modified","Value":"Sun, 15 Mar 2026 21:19:49 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/BrokenForge/js/gameCanvas.js">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\js\gameCanvas.js'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-pi4kKIk/FlRsh\u002BNkXWP86XhGrfqZ7l\u002BS8HwibJPBlR4="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1135"},{"Name":"Content-Type","Value":"text/javascript"},{"Name":"ETag","Value":"\u0022pi4kKIk/FlRsh\u002BNkXWP86XhGrfqZ7l\u002BS8HwibJPBlR4=\u0022"},{"Name":"Last-Modified","Value":"Sun, 15 Mar 2026 21:19:49 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
+  </ItemGroup>
+</Project>

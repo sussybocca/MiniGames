@@ -1,0 +1,38 @@
+.computer-emulator {
+    background: #333;
+    border-radius: 10px;
+    padding: 20px;
+    display: inline-block;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+.computer-screen {
+    width: 800px;
+    height: 450px;
+    background: #fff;
+    border: 2px solid #777;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+.computer-game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+.computer-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ccc;
+}
+.keyboard-hint {
+    font-size: 14px;
+}
+.ctrl-alt-del {
+    background: #a00;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}

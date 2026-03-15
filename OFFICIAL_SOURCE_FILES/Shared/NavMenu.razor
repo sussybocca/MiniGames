@@ -1,14 +1,25 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 @implements IDisposable
+@using Toolbelt.Blazor.Gamepad
+@using System.Timers
 
 <!-- Mode Toggle Buttons -->
-<div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; gap: 10px;">
+<div style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px;">
     <button @onclick="ToggleHandMode" style="padding: 12px 20px; background: @(_handMode ? "#4CAF50" : "#f44336"); color: white; border: none; border-radius: 50px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s;">
         <span style="margin-right: 8px;">🖐️</span> Hand: @(_handMode ? "ON" : "OFF")
     </button>
     <button @onclick="ToggleBluetoothMode" style="padding: 12px 20px; background: @(_bluetoothMode ? "#4CAF50" : "#f44336"); color: white; border: none; border-radius: 50px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s;">
         <span style="margin-right: 8px;">🎧</span> Bluetooth: @(_bluetoothMode ? "ON" : "OFF")
+    </button>
+    <button @onclick="ToggleVoiceMode" style="padding: 12px 20px; background: @(_voiceMode ? "#4CAF50" : "#f44336"); color: white; border: none; border-radius: 50px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s;">
+        <span style="margin-right: 8px;">🗣️</span> Voice: @(_voiceMode ? "ON" : "OFF")
+    </button>
+    <button @onclick="ToggleEyeMode" style="padding: 12px 20px; background: @(_eyeMode ? "#4CAF50" : "#f44336"); color: white; border: none; border-radius: 50px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s;">
+        <span style="margin-right: 8px;">👁️</span> Eye: @(_eyeMode ? "ON" : "OFF")
+    </button>
+    <button @onclick="ToggleGamepadMode" style="padding: 12px 20px; background: @(_gamepadMode ? "#4CAF50" : "#f44336"); color: white; border: none; border-radius: 50px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: all 0.3s;">
+        <span style="margin-right: 8px;">🎮</span> Gamepad: @(_gamepadMode ? "ON" : "OFF")
     </button>
 </div>
 
@@ -16,10 +27,10 @@
 <canvas id="handCanvas" style="display: @(_handMode ? "block" : "none"); position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; background: transparent;"></canvas>
 
 <div class="nav-menu">
-    <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+    <NavLink class="nav-link" id="nav-home" href="" Match="NavLinkMatch.All">
         <span class="nav-icon">🏠</span> Home
     </NavLink>
-    <NavLink class="nav-link" href="about">
+    <NavLink class="nav-link" id="nav-about" href="about">
         <span class="nav-icon">ℹ️</span> About
     </NavLink>
 
@@ -36,7 +47,7 @@
         @if (_dsOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/game/dude?device=ds">Play DS</NavLink>
+                <NavLink class="nav-link sub" id="nav-ds" href="/game/dude?device=ds">Play DS</NavLink>
             </div>
         }
     </div>
@@ -50,7 +61,7 @@
         @if (_mobileOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/game/dude?device=mobile">Play Mobile</NavLink>
+                <NavLink class="nav-link sub" id="nav-mobile" href="/game/dude?device=mobile">Play Mobile</NavLink>
             </div>
         }
     </div>
@@ -64,7 +75,7 @@
         @if (_computerOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/game/dude?device=computer">Play Computer</NavLink>
+                <NavLink class="nav-link sub" id="nav-computer" href="/game/dude?device=computer">Play Computer</NavLink>
             </div>
         }
     </div>
@@ -78,7 +89,7 @@
         @if (_gameboy3Open)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/gameboy3/play">Play GameBoy 3</NavLink>
+                <NavLink class="nav-link sub" id="nav-gameboy3" href="/gameboy3/play">Play GameBoy 3</NavLink>
             </div>
         }
     </div>
@@ -92,7 +103,7 @@
         @if (_universalModderOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/emulator/universal-modder">Launch Modder</NavLink>
+                <NavLink class="nav-link sub" id="nav-universal-modder" href="/emulator/universal-modder">Launch Modder</NavLink>
             </div>
         }
     </div>
@@ -106,12 +117,12 @@
         @if (_threeOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/three">View Gallery</NavLink>
+                <NavLink class="nav-link sub" id="nav-three" href="/three">View Gallery</NavLink>
             </div>
         }
     </div>
 
-    <!-- Hand Navigation Section (NEW) -->
+    <!-- Hand Navigation Section -->
     <div class="nav-section">
         <div class="nav-section-header" @onclick='() => ToggleSection("handNav")'>
             <span>🖐️ Hand Navigation</span>
@@ -120,8 +131,24 @@
         @if (_handNavOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/hand-nav">Gesture Art</NavLink>
-                <NavLink class="nav-link sub" href="/hand-control">Control Menu</NavLink>
+                <NavLink class="nav-link sub" id="nav-hand-nav" href="/hand-nav">Gesture Art</NavLink>
+                <NavLink class="nav-link sub" id="nav-hand-control" href="/hand-control">Control Menu</NavLink>
+            </div>
+        }
+    </div>
+
+    <!-- UNIVERSAL FRONTEND EMULATOR (UFE) SECTION – NEW -->
+    <div class="nav-section">
+        <div class="nav-section-header" @onclick='() => ToggleSection("ufe")'>
+            <span>🎮 UFE (Flash/GBA/PS1)</span>
+            <span class="toggle-icon">@GetIcon(_ufeOpen)</span>
+        </div>
+        @if (_ufeOpen)
+        {
+            <div class="nav-submenu">
+                <NavLink class="nav-link sub" id="nav-ufe-flash" href="/ufe/play?system=flash">Flash Games</NavLink>
+                <NavLink class="nav-link sub" id="nav-ufe-gba" href="/ufe/play?system=gba">GBA Games</NavLink>
+                <NavLink class="nav-link sub" id="nav-ufe-ps1" href="/ufe/play?system=ps1">PS1 Games</NavLink>
             </div>
         }
     </div>
@@ -135,7 +162,7 @@
         @if (_pcOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/pc/play">Play PC</NavLink>
+                <NavLink class="nav-link sub" id="nav-pc" href="/pc/play">Play PC</NavLink>
             </div>
         }
     </div>
@@ -149,7 +176,7 @@
         @if (_nds2Open)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/nds2/play">Play DS2</NavLink>
+                <NavLink class="nav-link sub" id="nav-nds2" href="/nds2/play">Play DS2</NavLink>
             </div>
         }
     </div>
@@ -163,7 +190,7 @@
         @if (_ds3Open)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/ds3/play">Play DS3</NavLink>
+                <NavLink class="nav-link sub" id="nav-ds3" href="/ds3/play">Play DS3</NavLink>
             </div>
         }
     </div>
@@ -177,7 +204,7 @@
         @if (_jsonServiceOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/json-service">Create Game</NavLink>
+                <NavLink class="nav-link sub" id="nav-json-service" href="/json-service">Create Game</NavLink>
             </div>
         }
     </div>
@@ -191,7 +218,7 @@
         @if (_trippyOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/trippy/play">Play</NavLink>
+                <NavLink class="nav-link sub" id="nav-trippy" href="/trippy/play">Play</NavLink>
             </div>
         }
     </div>
@@ -205,7 +232,7 @@
         @if (_tvOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/tv/play">Watch TV</NavLink>
+                <NavLink class="nav-link sub" id="nav-tv" href="/tv/play">Watch TV</NavLink>
             </div>
         }
     </div>
@@ -219,7 +246,7 @@
         @if (_chaosTestOpen)
         {
             <div class="nav-submenu">
-                <NavLink class="nav-link sub" href="/chaos-test">Launch Test</NavLink>
+                <NavLink class="nav-link sub" id="nav-chaos-test" href="/chaos-test">Launch Test</NavLink>
             </div>
         }
     </div>
@@ -234,6 +261,7 @@
     private bool _universalModderOpen = false;
     private bool _threeOpen = false;
     private bool _handNavOpen = false;
+    private bool _ufeOpen = false; // New UFE section toggle
     private bool _atariOpen = false;
     private bool _pspOpen = false;
     private bool _pcOpen = false;
@@ -247,11 +275,88 @@
 
     private bool _handMode = false;
     private bool _bluetoothMode = false;
+    private bool _voiceMode = false;
+    private bool _eyeMode = false;
+    private bool _gamepadMode = false;
+
     private DotNetObjectReference<NavMenu>? _dotNetRef;
+    private Gamepad? _activeGamepad; // Track the active gamepad
+    private readonly System.Timers.Timer _gamepadTimer = new System.Timers.Timer(100) { Enabled = false };
+    private int _gamepadFocusIndex = -1; // -1 means no focus
+
+    [Inject] private GamepadList GamepadList { get; set; } = default!;
 
     protected override void OnInitialized()
     {
         _dotNetRef = DotNetObjectReference.Create(this);
+        _gamepadTimer.Elapsed += GamepadTimer_Elapsed;
+    }
+
+    private async void GamepadTimer_Elapsed(object? sender, ElapsedEventArgs args)
+    {
+        var gamepads = await GamepadList.GetGamepadsAsync();
+        var gamepad = gamepads.FirstOrDefault();
+        if (gamepad != null && _activeGamepad != gamepad)
+        {
+            _activeGamepad = gamepad;
+            await InvokeAsync(StateHasChanged);
+        }
+
+        if (_activeGamepad != null)
+        {
+            // Map D‑pad up/down to move focus through nav links
+            if (_activeGamepad.Buttons[12].Pressed) // D‑pad up
+            {
+                MoveFocus(-1);
+            }
+            else if (_activeGamepad.Buttons[13].Pressed) // D‑pad down
+            {
+                MoveFocus(1);
+            }
+
+            // A button (index 0) clicks the focused link
+            if (_activeGamepad.Buttons[0].Pressed && _gamepadFocusIndex != -1)
+            {
+                var allLinks = new[]
+                {
+                    "nav-home", "nav-about", "nav-ds", "nav-mobile", "nav-computer",
+                    "nav-gameboy3", "nav-universal-modder", "nav-three", "nav-hand-nav",
+                    "nav-hand-control", "nav-ufe-flash", "nav-ufe-gba", "nav-ufe-ps1",
+                    "nav-pc", "nav-nds2", "nav-ds3", "nav-json-service", "nav-trippy",
+                    "nav-tv", "nav-chaos-test"
+                };
+                if (_gamepadFocusIndex >= 0 && _gamepadFocusIndex < allLinks.Length)
+                {
+                    await JS.InvokeVoidAsync("eval", $"document.getElementById('{allLinks[_gamepadFocusIndex]}').click()");
+                }
+            }
+        }
+    }
+
+    private void MoveFocus(int direction)
+    {
+        var allLinks = new[]
+        {
+            "nav-home", "nav-about", "nav-ds", "nav-mobile", "nav-computer",
+            "nav-gameboy3", "nav-universal-modder", "nav-three", "nav-hand-nav",
+            "nav-hand-control", "nav-ufe-flash", "nav-ufe-gba", "nav-ufe-ps1",
+            "nav-pc", "nav-nds2", "nav-ds3", "nav-json-service", "nav-trippy",
+            "nav-tv", "nav-chaos-test"
+        };
+
+        if (_gamepadFocusIndex == -1)
+        {
+            _gamepadFocusIndex = 0;
+        }
+        else
+        {
+            _gamepadFocusIndex = (_gamepadFocusIndex + direction + allLinks.Length) % allLinks.Length;
+        }
+
+        // Apply visual focus
+        ClearAllHighlights();
+        var js = $"document.getElementById('{allLinks[_gamepadFocusIndex]}')?.classList.add('gamepad-focus')";
+        JS.InvokeVoidAsync("eval", js);
     }
 
     private async void ToggleHandMode()
@@ -260,13 +365,9 @@
         StateHasChanged();
 
         if (_handMode)
-        {
             await JS.InvokeVoidAsync("enableHandTracking", _dotNetRef);
-        }
         else
-        {
             await JS.InvokeVoidAsync("disableHandTracking");
-        }
     }
 
     private async void ToggleBluetoothMode()
@@ -275,13 +376,80 @@
         StateHasChanged();
 
         if (_bluetoothMode)
-        {
             await JS.InvokeVoidAsync("enableBluetoothMode", _dotNetRef);
+        else
+            await JS.InvokeVoidAsync("disableBluetoothMode");
+    }
+
+    private async void ToggleVoiceMode()
+    {
+        _voiceMode = !_voiceMode;
+        StateHasChanged();
+
+        if (_voiceMode)
+            await JS.InvokeVoidAsync("enableVoiceControl", _dotNetRef);
+        else
+            await JS.InvokeVoidAsync("disableVoiceControl");
+    }
+
+    private async void ToggleEyeMode()
+    {
+        _eyeMode = !_eyeMode;
+        StateHasChanged();
+
+        if (_eyeMode)
+            await JS.InvokeVoidAsync("enableEyeTracking", _dotNetRef);
+        else
+            await JS.InvokeVoidAsync("disableEyeTracking");
+    }
+
+    private async void ToggleGamepadMode()
+    {
+        _gamepadMode = !_gamepadMode;
+        StateHasChanged();
+
+        if (_gamepadMode)
+        {
+            _gamepadTimer.Enabled = true;
+            _gamepadTimer.Start();
         }
         else
         {
-            await JS.InvokeVoidAsync("disableBluetoothMode");
+            _gamepadTimer.Enabled = false;
+            _gamepadTimer.Stop();
+            ClearAllHighlights();
         }
+    }
+
+    [JSInvokable]
+    public void OnVoiceCommand(string command)
+    {
+        var lower = command.ToLowerInvariant();
+        if (lower.Contains("home")) Navigation.NavigateTo("/");
+        else if (lower.Contains("about")) Navigation.NavigateTo("/about");
+        else if (lower.Contains("gameboy")) Navigation.NavigateTo("/gameboy3/play");
+        else if (lower.Contains("three")) Navigation.NavigateTo("/three");
+        else if (lower.Contains("flash")) Navigation.NavigateTo("/ufe/play?system=flash");
+        else if (lower.Contains("gba")) Navigation.NavigateTo("/ufe/play?system=gba");
+        else if (lower.Contains("ps1")) Navigation.NavigateTo("/ufe/play?system=ps1");
+    }
+
+    [JSInvokable]
+    public void OnEyeGaze(string elementId)
+    {
+        ClearAllHighlights();
+        if (!string.IsNullOrEmpty(elementId))
+        {
+            var js = $"document.getElementById('{elementId}')?.classList.add('eye-focus')";
+            JS.InvokeVoidAsync("eval", js);
+        }
+    }
+
+    private void ClearAllHighlights()
+    {
+        var js = @"document.querySelectorAll('.voice-focus, .eye-focus, .gamepad-focus, .hand-hover, .bt-focus').forEach(el => 
+                    el.classList.remove('voice-focus', 'eye-focus', 'gamepad-focus', 'hand-hover', 'bt-focus'))";
+        JS.InvokeVoidAsync("eval", js);
     }
 
     private void ToggleSection(string section)
@@ -295,6 +463,7 @@
             case "universalModder": _universalModderOpen = !_universalModderOpen; break;
             case "three": _threeOpen = !_threeOpen; break;
             case "handNav": _handNavOpen = !_handNavOpen; break;
+            case "ufe": _ufeOpen = !_ufeOpen; break; // UFE toggle
             case "pc": _pcOpen = !_pcOpen; break;
             case "nds2": _nds2Open = !_nds2Open; break;
             case "ds3": _ds3Open = !_ds3Open; break;
@@ -308,6 +477,12 @@
     public void Dispose()
     {
         _dotNetRef?.Dispose();
+        _gamepadTimer.Elapsed -= GamepadTimer_Elapsed;
+        _gamepadTimer.Dispose();
+        JS.InvokeVoidAsync("disableHandTracking");
+        JS.InvokeVoidAsync("disableBluetoothMode");
+        JS.InvokeVoidAsync("disableVoiceControl");
+        JS.InvokeVoidAsync("disableEyeTracking");
     }
 }
 
@@ -315,26 +490,39 @@
     .hand-hover {
         outline: 3px solid #4CAF50 !important;
         box-shadow: 0 0 20px #4CAF50 !important;
-        transition: all 0.2s ease;
         background-color: rgba(76, 175, 80, 0.2) !important;
     }
     .bt-focus {
         outline: 3px solid #2196F3 !important;
         box-shadow: 0 0 20px #2196F3 !important;
-        transition: all 0.2s ease;
         background-color: rgba(33, 150, 243, 0.2) !important;
+    }
+    .voice-focus {
+        outline: 3px solid #FF9800 !important;
+        box-shadow: 0 0 20px #FF9800 !important;
+        background-color: rgba(255, 152, 0, 0.2) !important;
+    }
+    .eye-focus {
+        outline: 3px solid #9C27B0 !important;
+        box-shadow: 0 0 20px #9C27B0 !important;
+        background-color: rgba(156, 39, 176, 0.2) !important;
+    }
+    .gamepad-focus {
+        outline: 3px solid #FF5722 !important;
+        box-shadow: 0 0 20px #FF5722 !important;
+        background-color: rgba(255, 87, 34, 0.2) !important;
     }
 </style>
 
 <script>
-    // ===== HAND TRACKING (unchanged) =====
+    // ===== HAND TRACKING (unchanged from previous working version) =====
     let handTrackingActive = false;
     let canvas, ctx;
     let camera = null;
     let hands = null;
     let dotNetRef = null;
     let lastPinchTime = 0;
-    const pinchCooldown = 500; // ms between clicks
+    const pinchCooldown = 500;
 
     function getDistance(p1, p2) {
         return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
@@ -392,12 +580,10 @@
 
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 const landmarks = results.multiHandLandmarks[0];
-                // Index finger tip (landmark 8)
                 const indexTip = landmarks[8];
                 const x = indexTip.x * canvas.width;
                 const y = indexTip.y * canvas.height;
 
-                // Draw cursor with effects
                 ctx.shadowColor = '#4CAF50';
                 ctx.shadowBlur = 30;
                 ctx.beginPath();
@@ -415,12 +601,10 @@
                 ctx.fillStyle = '#4CAF50';
                 ctx.fill();
 
-                // Remove previous highlights
                 document.querySelectorAll('.nav-link.hand-hover').forEach(el => {
                     el.classList.remove('hand-hover');
                 });
 
-                // Find element under finger
                 const element = document.elementFromPoint(x, y);
                 let hoveredNavLink = null;
                 if (element) {
@@ -431,7 +615,6 @@
                     }
                 }
 
-                // Pinch detection (thumb tip = landmark 4)
                 const thumbTip = landmarks[4];
                 const pinchDist = getDistance(
                     { x: thumbTip.x * canvas.width, y: thumbTip.y * canvas.height },
@@ -441,11 +624,10 @@
                 if (pinchDist < 30 && now - lastPinchTime > pinchCooldown) {
                     lastPinchTime = now;
                     if (hoveredNavLink) {
-                        hoveredNavLink.click(); // simulate click
+                        hoveredNavLink.click();
                     }
                 }
             } else {
-                // No hand – remove highlights
                 document.querySelectorAll('.nav-link.hand-hover').forEach(el => {
                     el.classList.remove('hand-hover');
                 });
@@ -477,23 +659,18 @@
     // ===== BLUETOOTH HEADPHONE CONTROL =====
     let bluetoothActive = false;
     let btNavLinks = [];
-    let btCurrentIndex = -1; // -1 means none focused
+    let btCurrentIndex = -1;
 
-    // Function to update focus based on current index
     function updateBtFocus() {
-        // Remove focus from all
         document.querySelectorAll('.nav-link.bt-focus').forEach(el => el.classList.remove('bt-focus'));
         if (btCurrentIndex >= 0 && btCurrentIndex < btNavLinks.length) {
             btNavLinks[btCurrentIndex].classList.add('bt-focus');
-            // Optionally scroll into view
             btNavLinks[btCurrentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
 
-    // Collect all nav links (including submenu items)
     function refreshNavLinks() {
         btNavLinks = Array.from(document.querySelectorAll('.nav-link'));
-        // Remove focus if current index is out of bounds
         if (btCurrentIndex >= btNavLinks.length) btCurrentIndex = -1;
         updateBtFocus();
     }
@@ -502,72 +679,20 @@
         if (bluetoothActive) return;
         bluetoothActive = true;
         dotNetRef = dotNetObj;
-
-        // Initial collection of nav links
         refreshNavLinks();
-
-        // Start listening to media key events
         window.addEventListener('keydown', handleMediaKey);
     };
 
     window.disableBluetoothMode = () => {
         bluetoothActive = false;
         window.removeEventListener('keydown', handleMediaKey);
-        // Remove focus
         document.querySelectorAll('.nav-link.bt-focus').forEach(el => el.classList.remove('bt-focus'));
     };
 
-    function handleMediaKey(e) {
-        if (!bluetoothActive) return;
-
-        // Prevent default browser actions for these keys (so they don't also control volume/media)
-        e.preventDefault();
-
-        // Map key codes
-        switch (e.code) {
-            case 'VolumeUp':
-                // Move focus to next link
-                if (btNavLinks.length === 0) break;
-                btCurrentIndex = (btCurrentIndex + 1) % btNavLinks.length;
-                updateBtFocus();
-                break;
-            case 'VolumeDown':
-                // Move focus to previous link
-                if (btNavLinks.length === 0) break;
-                btCurrentIndex = (btCurrentIndex - 1 + btNavLinks.length) % btNavLinks.length;
-                updateBtFocus();
-                break;
-            case 'MediaPlayPause':
-                // Click the currently focused link
-                if (btCurrentIndex >= 0 && btCurrentIndex < btNavLinks.length) {
-                    btNavLinks[btCurrentIndex].click();
-                }
-                break;
-            case 'MediaTrackNext':
-                // Scroll down a bit
-                window.scrollBy({ top: 100, behavior: 'smooth' });
-                break;
-            case 'MediaTrackPrevious':
-                // Scroll up a bit
-                window.scrollBy({ top: -100, behavior: 'smooth' });
-                break;
-        }
-    }
-
-    // Re‑scan nav links if the menu structure changes (e.g., sections expanded/collapsed)
-    // We can call refreshNavLinks() from Blazor when toggling sections.
-    // But for simplicity, we'll just refresh on each key press.
-    // In handleMediaKey, we can call refreshNavLinks() before using btNavLinks.
-    // I'll modify handleMediaKey to refresh first.
-
-    // Updated handler to refresh before acting
     window.handleMediaKey = (e) => {
         if (!bluetoothActive) return;
         e.preventDefault();
-
-        // Refresh list of nav links (in case sections expanded/collapsed)
         btNavLinks = Array.from(document.querySelectorAll('.nav-link'));
-
         switch (e.code) {
             case 'VolumeUp':
                 if (btNavLinks.length === 0) break;
@@ -591,6 +716,93 @@
                 window.scrollBy({ top: -100, behavior: 'smooth' });
                 break;
         }
+    };
+
+    // ===== VOICE CONTROL =====
+    let voiceActive = false;
+    let voiceRecognition = null;
+    let voiceDotNetRef = null;
+
+    window.enableVoiceControl = (dotNetObj) => {
+        if (voiceActive) return;
+        voiceDotNetRef = dotNetObj;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Voice control not supported in this browser.");
+            return;
+        }
+        voiceRecognition = new SpeechRecognition();
+        voiceRecognition.continuous = true;
+        voiceRecognition.interimResults = false;
+        voiceRecognition.lang = 'en-US';
+        voiceRecognition.onresult = (event) => {
+            const text = event.results[event.results.length - 1][0].transcript;
+            voiceDotNetRef.invokeMethodAsync('OnVoiceCommand', text);
+        };
+        voiceRecognition.start();
+        voiceActive = true;
+    };
+
+    window.disableVoiceControl = () => {
+        if (voiceRecognition) {
+            voiceRecognition.stop();
+            voiceRecognition = null;
+        }
+        voiceActive = false;
+        document.querySelectorAll('.nav-link.voice-focus').forEach(el => el.classList.remove('voice-focus'));
+    };
+
+    // ===== EYE TRACKING (WebGazer.js) =====
+    let eyeActive = false;
+    let eyeDotNetRef = null;
+    let gazeInterval = null;
+
+    window.enableEyeTracking = (dotNetObj) => {
+        if (eyeActive) return;
+        eyeDotNetRef = dotNetObj;
+        if (typeof webgazer === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://webgazer.cs.brown.edu/webgazer.js';
+            script.onload = () => {
+                webgazer.setRegression('ridge').setTracker('clmtrackr').begin();
+                webgazer.showVideo(false).showPredictionPoints(false);
+                startGazeLoop();
+            };
+            document.head.appendChild(script);
+        } else {
+            startGazeLoop();
+        }
+        eyeActive = true;
+    };
+
+    function startGazeLoop() {
+        if (gazeInterval) clearInterval(gazeInterval);
+        gazeInterval = setInterval(() => {
+            if (!eyeActive) return;
+            webgazer.getCurrentPrediction().then(pred => {
+                if (pred) {
+                    const x = pred.x, y = pred.y;
+                    const element = document.elementFromPoint(x, y);
+                    if (element) {
+                        const navLink = element.closest('.nav-link');
+                        if (navLink && navLink.id) {
+                            eyeDotNetRef.invokeMethodAsync('OnEyeGaze', navLink.id);
+                        } else {
+                            eyeDotNetRef.invokeMethodAsync('OnEyeGaze', '');
+                        }
+                    } else {
+                        eyeDotNetRef.invokeMethodAsync('OnEyeGaze', '');
+                    }
+                }
+            });
+        }, 100);
+    }
+
+    window.disableEyeTracking = () => {
+        eyeActive = false;
+        if (gazeInterval) clearInterval(gazeInterval);
+        if (typeof webgazer !== 'undefined') webgazer.end();
+        document.querySelectorAll('.nav-link.eye-focus').forEach(el => el.classList.remove('eye-focus'));
     };
 
     // Cleanup on page unload
@@ -599,6 +811,13 @@
         if (hands) hands.close();
         if (bluetoothActive) {
             window.removeEventListener('keydown', handleMediaKey);
+        }
+        if (voiceActive && voiceRecognition) {
+            voiceRecognition.stop();
+        }
+        if (eyeActive) {
+            if (gazeInterval) clearInterval(gazeInterval);
+            if (typeof webgazer !== 'undefined') webgazer.end();
         }
     });
 </script>

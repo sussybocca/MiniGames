@@ -1,0 +1,286 @@
+.ds-emulator {
+    background: #2a2a2a;
+    padding: 20px;
+    border-radius: 30px 30px 20px 20px;
+    display: inline-block;
+    box-shadow: 0 20px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(100,100,100,0.3);
+    border: 3px solid #6a6a6a;
+}
+
+.ds-shell {
+    background: #1a1a1a;
+    border-radius: 20px 20px 30px 30px;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 10px rgba(200,200,200,0.2);
+    border: 2px solid #5a5a5a;
+}
+
+.top-screen {
+    background: #111;
+    border-radius: 15px 15px 5px 5px;
+    padding: 15px;
+    border-bottom: 2px solid #4a4a4a;
+}
+
+.screen-bezel, .bottom-screen-bezel {
+    background: #222;
+    border-radius: 10px;
+    padding: 10px;
+    border: 3px solid #3a3a3a;
+    box-shadow: inset 0 0 10px #000;
+}
+
+.screen-content {
+    background: #000;
+    border-radius: 5px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    position: relative;
+}
+
+.game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #000;
+}
+
+.scanlines, .pixel-grid, .screen-glare, .glitch-overlay, .static-overlay, .color-shift {
+    /* same as DS2 CSS – reuse those styles */
+}
+
+.top-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    color: #ccc;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+}
+
+.nintendo-logo {
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: #aaa;
+}
+
+.ds-logo {
+    font-size: 18px;
+    background: #5a5a5a;
+    color: #111;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.power-led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    box-shadow: inset 0 0 2px #000;
+}
+.power-led.on {
+    background: #0f0;
+    box-shadow: 0 0 5px #0f0;
+}
+
+.hinge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 30px;
+    background: #2a2a2a;
+    border-radius: 0 0 10px 10px;
+    margin: -5px 0;
+    z-index: 2;
+}
+
+.hinge-center {
+    width: 60px;
+    height: 20px;
+    background: #4a4a4a;
+    border-radius: 10px;
+    box-shadow: inset 0 2px 5px #222;
+}
+
+.hinge-left, .hinge-right {
+    width: 20px;
+    height: 20px;
+    background: #4a4a4a;
+    border-radius: 50%;
+    margin: 0 10px;
+}
+
+.bottom-unit {
+    background: #111;
+    border-radius: 5px 5px 15px 15px;
+    padding: 15px;
+    margin-top: 5px;
+}
+
+.stylus-slot {
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+.stylus-toggle {
+    padding: 5px 10px;
+    background: #3a3a3a;
+    color: #ccc;
+    border: 2px solid #5a5a5a;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.controls-panel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 15px;
+    background: #222;
+    padding: 15px;
+    border-radius: 15px;
+    border: 2px solid #5a5a5a;
+}
+
+.dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    width: 120px;
+}
+
+.dpad button {
+    background: #2a2a2a;
+    color: #eee;
+    border: 2px solid #5a5a5a;
+    border-radius: 8px;
+    font-size: 20px;
+    padding: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #3a3a3a;
+    transition: all 0.1s;
+}
+
+.dpad button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.dpad-up { grid-column: 2; }
+.dpad-left { grid-column: 1; grid-row: 2; }
+.dpad-right { grid-column: 3; grid-row: 2; }
+.dpad-down { grid-column: 2; grid-row: 3; }
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.action-buttons button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #5a5a5a;
+    box-shadow: 0 4px 0 #3a3a3a;
+    transition: all 0.1s;
+    color: white;
+}
+
+.action-buttons button:active {
+    transform: translateY(4px);
+    box-shadow: none;
+}
+
+.btn-a { background: #f44; }
+.btn-b { background: #4f4; color: black; }
+.btn-x { background: #44f; }
+.btn-y { background: #ff4; color: black; }
+
+.shoulder-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.shoulder-buttons button {
+    padding: 8px 16px;
+    background: #3a3a3a;
+    color: #eee;
+    border: 2px solid #5a5a5a;
+    border-radius: 15px;
+    font-size: 14px;
+    box-shadow: 0 4px 0 #2a2a2a;
+}
+
+.system-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.system-buttons button {
+    padding: 6px 12px;
+    background: #2a2a2a;
+    color: #eee;
+    border: 2px solid #5a5a5a;
+    border-radius: 8px;
+    font-size: 12px;
+    box-shadow: 0 4px 0 #1a1a1a;
+}
+
+.status-panel {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 15px;
+    background: #1a1a1a;
+    padding: 8px;
+    border-radius: 10px;
+    color: #0f0;
+    font-family: monospace;
+    font-size: 12px;
+    border: 1px solid #5a5a5a;
+}
+
+.power-led-small {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+}
+.power-led-small.on {
+    background: #0f0;
+    box-shadow: 0 0 5px #0f0;
+}
+
+.fps-indicator, .battery-indicator, .wifi-indicator {
+    padding: 2px 6px;
+    background: #222;
+    border-radius: 4px;
+}
+
+.volume-slider input {
+    width: 60px;
+    height: 4px;
+    background: #444;
+    outline: none;
+    -webkit-appearance: none;
+    border-radius: 2px;
+}
+
+.volume-slider input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    background: #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Chaos effect classes (same as DS2) */
+.chaos-shake, .chaos-spin, .chaos-pixelate, .chaos-wave, .chaos-vhs, .chaos-corrupt, .chaos-lag {
+    /* copy from DS2 CSS */
+}

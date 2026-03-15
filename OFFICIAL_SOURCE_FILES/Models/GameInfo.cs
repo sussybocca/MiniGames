@@ -16,6 +16,7 @@ public class GameInfo
     public string? Description { get; set; }
     public string? CoverImage { get; set; }      // Alternative to /images/cartridges/{Folder}.png
     public string? RomType { get; set; }          // e.g., "gb", "nes", "html"
+    public string? System { get; set; }           // e.g., "gba", "ps1", "flash" – for UFE
     public List<string>? Tags { get; set; }       // For categorization
 
     // Computed URL (remains unchanged)

@@ -1,0 +1,40 @@
+.psp-emulator {
+    background: #2c2c2c;
+    border-radius: 30px 30px 15px 15px;
+    padding: 20px;
+    display: inline-block;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    border: 2px solid #999;
+}
+.psp-emulator .screen {
+    width: 480px;
+    height: 272px;
+    background: #000;
+    border: 2px solid #777;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+.psp-emulator .game-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+.psp-controls {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+.psp-controls button {
+    background: #333;
+    color: #ccc;
+    border: 2px solid #555;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 18px;
+    cursor: pointer;
+}
+.psp-controls .btn-cross { background: #2a6f97; }
+.psp-controls .btn-circle { background: #c44545; }
+.psp-controls .btn-square { background: #7e5aa0; }
+.psp-controls .btn-triangle { background: #5fa85f; }

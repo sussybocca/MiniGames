@@ -17,15 +17,22 @@
     <!-- Roslyn for dynamic C# compilation -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.8.0" />
+    <PackageReference Include="System.Numerics.Vectors" Version="4.6.1" />
+    <PackageReference Include="Toolbelt.Blazor.Gamepad" Version="10.0.0" />
+    <PackageReference Include="VelcroPhysics" Version="0.2.2-CI-20210406-134555" />
+    
+    <!-- ADD THESE FOR SANDBLOX -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.0" />
+   
   </ItemGroup>
 
-  <!-- coreboy-net8 emulator reference -->
+  <!-- Reference to BrokenForge project -->
   <ItemGroup>
-    <ProjectReference Include="External\coreboy-net8\coreboy\coreboy.csproj" />
+    <ProjectReference Include="BlazorGames/BrokenForge/BrokenForge.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-  <Compile Remove="External\coreboy-net8\coreboy\**\*.cs" />
-  <None Include="External\coreboy-net8\coreboy\**\*.cs" />
+  <Compile Remove="BlazorGames/Sandblox/**/*.cs" />
+  <Content Remove="BlazorGames/Sandblox/**/*" />
 </ItemGroup>
-
 </Project>

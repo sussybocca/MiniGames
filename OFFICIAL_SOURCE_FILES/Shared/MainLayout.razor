@@ -91,7 +91,7 @@
         if (fakePath != currentPath)
         {
             // Force full page load to ensure catch‑all router picks it up
-            Navigation.NavigateTo(fakePath, forceLoad: true);
+            Navigation.NavigateTo(fakePath, forceLoad: false);
         }
     }
 
