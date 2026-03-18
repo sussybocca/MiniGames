@@ -1,25 +1,96 @@
 MiniGames Custom Source Code License
-
 Copyright (c) 2025 MiniGames
 
 Permission is hereby granted to any person obtaining a copy of this software and associated documentation files (the "Software"), to view, fork, and use the Software for personal or educational purposes, subject to the following conditions:
 
-1. **No Unauthorized Modifications**  
-   You may not modify, adapt, translate, or create derivative works of the Software, or any portion thereof, unless such modifications are explicitly authorized in writing by the original authors. Any unauthorized modification is strictly prohibited.
+1. No Unauthorized Modifications
+You may not modify, adapt, translate, or create derivative works of the Software, or any portion thereof, unless such modifications are explicitly authorized in writing by the original authors. Any unauthorized modification is strictly prohibited.
 
-2. **Leak Exception**  
-   In the event that the source code is leaked or made publicly available through unofficial channels, the prohibition on modifications is temporarily waived for the purpose of security research and bug fixes. However, you must notify the original authors immediately and collaborate to reinstate the official version. After the leak is resolved, you must cease any further modifications and revert to the official unmodified code.
+This includes but is not limited to:
 
-3. **No Commercial Use**  
-   You may not use the Software for commercial purposes without prior written consent from the authors.
+Altering the core functionality of emulators
 
-4. **Attribution**  
-   Any fork or public instance of the Software must retain this license and clearly credit the original authors. A visible link to the official repository must be provided.
+Removing or obscuring credit/attribution
 
-5. **Takedown Policy**  
-   If we discover any public instance of the Software that has been modified without authorization, we will politely request that the instance be taken down or that the modifications be removed. If the request is not honored, we reserve the right to take further legal action.
+Changing the license terms
 
-6. **No Warranty**  
-   The Software is provided "AS IS", without warranty of any kind, express or implied. In no event shall the authors be liable for any claim, damages, or other liability arising from the use of the Software.
+Repurposing the code for commercial projects without consent
 
-By forking or using this Software, you agree to these terms.
+2. Leak Exception
+In the event that the source code is leaked or made publicly available through unofficial channels, the prohibition on modifications is temporarily waived for the purpose of security research and critical bug fixes. However:
+
+You must notify the original authors immediately at babyyodacutefry@gmail.com with details of the leak.
+
+You must collaborate to reinstate the official version.
+
+After the leak is resolved, you must cease any further modifications and revert to the official unmodified code.
+
+This exception exists solely to protect users from malicious code that may be injected during a leak. It is not a loophole for permanent forks.
+
+3. No Commercial Use
+You may not use the Software for commercial purposes without prior written consent from the authors.
+
+Commercial purposes include, but are not limited to:
+
+Selling the Software or any derivative
+
+Hosting the Software behind paywalls or subscription services
+
+Using the Software to generate revenue (e.g., ad‑supported sites, cryptocurrency mining)
+
+Incorporating the Software into a commercial product or service
+
+If you wish to use MiniGames commercially, please contact us to discuss licensing options.
+
+4. Attribution
+Any fork or public instance of the Software must retain this license and clearly credit the original authors. A visible link to the official repository must be provided in a conspicuous location (e.g., the footer, about page, or README).
+
+Required attribution format:
+
+text
+Powered by MiniGames (https://github.com/sussybocca/MiniGames)
+Original code © 2025 MiniGames
+Failure to provide proper attribution will be considered a violation of this license.
+
+5. Takedown Policy
+We actively monitor public instances of the Software. If we discover any public instance that has been modified without authorization:
+
+We will politely request that the instance be taken down or that the modifications be removed.
+
+You will have 7 days to comply.
+
+If the request is not honored, we reserve the right to take further legal action, including but not limited to DMCA takedown notices and cease‑and‑desist letters.
+
+We believe in open communication and will always attempt to resolve issues amicably first. However, persistent violations will be met with appropriate legal measures.
+
+6. No Warranty
+The Software is provided "AS IS", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement. In no event shall the authors be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the Software or the use or other dealings in the Software.
+
+7. Forking and Contributions
+We welcome forks for personal and educational use! If you want to experiment, learn, or build something inspired by MiniGames, go for it. However:
+
+Do not host a modified public instance without prior approval.
+
+Do not remove attribution.
+
+Do not use the code commercially.
+
+If you have improvements or bug fixes, we encourage you to submit a pull request! Contributions that align with the project's vision will be gladly merged (and you'll be credited, of course).
+
+8. Contact Information
+For licensing inquiries, commercial use requests, or to report violations, please contact:
+
+Email: babyyodacutefry@gmail.com
+GitHub: Issues (for public discussions)
+
+Please include "MiniGames License" in the subject line for faster responses.
+
+9. Governing Law
+This license shall be governed by and construed in accordance with the laws of the jurisdiction in which the original authors reside, without regard to its conflict of law provisions.
+
+10. Acceptance
+By forking, cloning, downloading, or using this Software in any way, you acknowledge that you have read, understood, and agree to be bound by the terms and conditions of this license.
+
+If you do not agree to these terms, you are not permitted to use or fork the Software.
+
+Thank you for respecting the hard work that went into building MiniGames. Together, we can keep the spirit of open source alive while protecting the integrity of the project. ❤️
